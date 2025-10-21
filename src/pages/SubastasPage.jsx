@@ -1,0 +1,275 @@
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "font-awesome/css/font-awesome.min.css";
+
+export default function SubastasPage() {
+  const navigate = useNavigate();
+
+  const [presupuesto, setPresupuesto] = useState(5000);
+  const presupuestoMaximo = 100000;
+  const [subastas, setSubastas] = useState([]);
+  const [modal, setModal] = useState(null);
+  const [productoGanado, setProductoGanado] = useState(null);
+
+  // 🔹 Inicializar subastas y presupuesto del usuario
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+    if (!usuario) {
+      alert("Por favor inicia sesión primero");
+      navigate("/");
+      return;
+    }
+    setPresupuesto(usuario.presupuesto || 5000);
+
+    const lista = [
+      { id: 1, nombre: "Laptop Gamer", precio: 100, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/Lgamer.jpg" },
+      { id: 2, nombre: "Smartphone", precio: 250, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/cel.webp" },
+      { id: 3, nombre: "Auriculares", precio: 75, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/auri.jpg" },
+      { id: 4, nombre: "Carta Pokémon", precio: 1000, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/ctpokemon.jpg" },
+      { id: 5, nombre: "PlayStation 5", precio: 500, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/play5.jpg" },
+      { id: 6, nombre: "Bicicleta", precio: 300, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/bici.webp" },
+    ];
+    setSubastas(lista);
+  }, [navigate]);
+
+  const formatearDinero = (monto) =>
+    monto.toLocaleString("es-CL", { style: "currency", currency: "CLP" });
+
+  const formatearTiempo = (segundos) => {
+    const min = Math.floor(segundos / 60);
+    const sec = segundos % 60;
+    return `${min}:${sec < 10 ? "0" + sec : sec}`;
+  };
+
+  // 🔹 Simulación de subastas con temporizador
+  const iniciarSubasta = (subasta) => {
+    subasta.tiempo = Math.floor(Math.random() * (240 - 60 + 1)) + 60;
+    actualizarSubasta(subasta);
+    iniciarBot(subasta);
+
+    const intervalo = setInterval(() => {
+      setSubastas((prev) =>
+        prev.map((s) => {
+          if (s.id === subasta.id) {
+            const nuevoTiempo = s.tiempo - 1;
+            if (nuevoTiempo <= 0) {
+              clearInterval(intervalo);
+              finalizarSubasta(s);
+              return { ...s, tiempo: 0 };
+            }
+            return { ...s, tiempo: nuevoTiempo };
+          }
+          return s;
+        })
+      );
+    }, 1000);
+  };
+
+  const iniciarBot = (subasta) => {
+    const pujarBot = () => {
+      if (subasta.tiempo > 0) {
+        if (subasta.ganador !== "bot") {
+          subasta.precio += Math.floor(Math.random() * 20) + 5;
+          subasta.ganador = "bot";
+          actualizarSubasta(subasta);
+        }
+        let delay = Math.random() * 4000 + 2000;
+        if (subasta.precio >= 2000) delay *= 2;
+        if (subasta.precio >= 5000) delay *= 3;
+        setTimeout(() => pujarBot(), delay);
+      }
+    };
+    setTimeout(() => pujarBot(), Math.random() * 3000 + 1000);
+  };
+
+  const actualizarSubasta = (subasta) => {
+    setSubastas((prev) =>
+      prev.map((s) => (s.id === subasta.id ? { ...subasta } : s))
+    );
+  };
+
+  // 🔹 Pujar manualmente
+  const pujar = (subasta) => {
+    if (subasta.tiempo <= 0) return;
+    if (presupuesto < 10) return alert("⚠️ No tienes suficiente presupuesto.");
+
+    subasta.precio += 10;
+    subasta.ganador = "usuario";
+    subasta.ultimaPujaUsuario = subasta.precio;
+    setPresupuesto((p) => p - 10);
+    actualizarSubasta(subasta);
+  };
+
+  // 🔹 Finalizar subasta
+  const finalizarSubasta = (subasta) => {
+    if (subasta.ganador === "usuario") {
+      setProductoGanado(subasta);
+      setModal("reclamar");
+    }
+  };
+
+  // 🔹 Reclamar subasta ganada
+  const reclamarSubasta = () => {
+    if (!productoGanado) return;
+
+    const producto = {
+      id: productoGanado.id,
+      nombre: productoGanado.nombre,
+      imagen: productoGanado.imagen,
+      precio: productoGanado.ultimaPujaUsuario,
+      fechaGanada: new Date().toISOString(),
+      estado: "PENDIENTE_ENVIO",
+    };
+
+    let productosGanados = JSON.parse(localStorage.getItem("productosGanados")) || [];
+    productosGanados.push(producto);
+    localStorage.setItem("productosGanados", JSON.stringify(productosGanados));
+
+    alert("✅ Producto reclamado exitosamente. Redirigiendo a Envíos...");
+    setModal(null);
+    setTimeout(() => navigate("/envios"), 800);
+  };
+
+  // 🔹 Recargar presupuesto
+  const recargar = (monto) => {
+    if (presupuesto + monto > presupuestoMaximo) {
+      alert("Límite máximo alcanzado");
+      return;
+    }
+    setPresupuesto((p) => p + monto);
+  };
+
+  // =================== UI ===================
+  return (
+    <>
+      {/* 🔹 Navbar global */}
+      <Navbar />
+
+      <main className="container mt-5">
+        <div className="text-end mb-3">
+          <span className="badge bg-success fs-6">
+            💰 Presupuesto: {formatearDinero(presupuesto)}
+          </span>
+          <button
+            className="btn btn-sm btn-outline-primary ms-2"
+            onClick={() => recargar(1000)}
+          >
+            + Recargar $1,000
+          </button>
+        </div>
+
+        <h2 className="text-center mb-4">Subastas Activas</h2>
+        <div className="row">
+          {subastas.map((subasta) => (
+            <div className="col-md-4 mb-4" key={subasta.id}>
+              <div className="card shadow-sm">
+                <img
+                  src={subasta.imagen}
+                  alt={subasta.nombre}
+                  className="card-img-top"
+                  style={{ height: "220px", objectFit: "cover" }}
+                />
+                <div className="card-body text-center">
+                  <h5>{subasta.nombre}</h5>
+                  <p>
+                    Precio actual:{" "}
+                    <strong>{formatearDinero(subasta.precio)}</strong>
+                  </p>
+                  <p className="text-danger">
+                    Tiempo: {formatearTiempo(subasta.tiempo)}
+                  </p>
+                  <button
+                    className="btn btn-primary w-100 mb-2"
+                    onClick={() =>
+                      subasta.tiempo > 0 ? pujar(subasta) : iniciarSubasta(subasta)
+                    }
+                  >
+                    {subasta.tiempo > 0 ? "Pujar" : "Iniciar Subasta"}
+                  </button>
+
+                  {subasta.ultimaPujaUsuario && (
+                    <p className="text-success">
+                      Tu última puja: {formatearDinero(subasta.ultimaPujaUsuario)}
+                    </p>
+                  )}
+
+                  {subasta.tiempo === 0 && subasta.ganador && (
+                    <p
+                      className={
+                        subasta.ganador === "usuario"
+                          ? "text-success fw-bold"
+                          : "text-danger fw-bold"
+                      }
+                    >
+                      {subasta.ganador === "usuario"
+                        ? "¡Ganaste! 🎉"
+                        : "Perdiste... 👤"}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      {/* 🔹 Footer global */}
+      <Footer />
+
+      {/* 🔹 Modal Reclamar */}
+      {modal === "reclamar" && productoGanado && (
+        <div
+          className="modal fade show d-block"
+          tabIndex="-1"
+          role="dialog"
+          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header bg-success text-white">
+                <h5 className="modal-title">
+                  <i className="fas fa-trophy me-2"></i>¡Felicitaciones!
+                </h5>
+                <button
+                  className="btn-close btn-close-white"
+                  onClick={() => setModal(null)}
+                ></button>
+              </div>
+              <div className="modal-body text-center">
+                <i
+                  className="fas fa-trophy text-success mb-3"
+                  style={{ fontSize: "3rem" }}
+                ></i>
+                <h6>¡Has ganado la subasta!</h6>
+                <p>
+                  Producto: <strong>{productoGanado.nombre}</strong>
+                </p>
+                <p>
+                  Precio final:{" "}
+                  <strong>{formatearDinero(productoGanado.ultimaPujaUsuario)}</strong>
+                </p>
+                <div className="alert alert-info">
+                  Para completar tu compra, configura el envío.
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setModal(null)}
+                >
+                  Más tarde
+                </button>
+                <button className="btn btn-success" onClick={reclamarSubasta}>
+                  <i className="fas fa-gift me-2"></i>Reclamar y Ver Envío
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
