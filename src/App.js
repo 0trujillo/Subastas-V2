@@ -16,7 +16,7 @@ function App() {
       {/* 🔹 Navbar fijo en todas las páginas */}
       <Navbar />
 
-      {/* 🔹 Definición de rutas */}
+      {/* 🔹 Rutas */}
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/subastas" element={<SubastasPage />} />
