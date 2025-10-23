@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "font-awesome/css/font-awesome.min.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  const [modo, setModo] = useState("login"); // "login" o "registro"
+  const [modo, setModo] = useState("login");
   const [usuarios, setUsuarios] = useState([]);
   const [form, setForm] = useState({
     nombre: "",
@@ -94,7 +93,7 @@ export default function LoginPage() {
       {/* Header */}
       <header className="bg-primary text-white py-3 text-center">
         <h1>
-          <i className="fas fa-gavel me-2"></i>Subastas Online
+          <i className="fa-solid fa-gavel me-2"></i>Subastas Online
         </h1>
         <p>El mejor sitio de subastas online</p>
       </header>
@@ -107,14 +106,14 @@ export default function LoginPage() {
               <div className="card shadow">
                 <div className="card-header bg-primary text-white">
                   <h2 className="mb-0">
-                    <i className="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                    <i className="fa-solid fa-right-to-bracket me-2"></i>Iniciar Sesión
                   </h2>
                 </div>
                 <div className="card-body">
                   <form onSubmit={ingresarUsuario}>
                     <div className="mb-3">
                       <label className="form-label">
-                        <i className="fas fa-envelope me-2"></i>Correo electrónico
+                        <i className="fa-solid fa-envelope me-2"></i>Correo electrónico
                       </label>
                       <input
                         type="email"
@@ -127,7 +126,7 @@ export default function LoginPage() {
                     </div>
                     <div className="mb-3">
                       <label className="form-label">
-                        <i className="fas fa-lock me-2"></i>Contraseña
+                        <i className="fa-solid fa-lock me-2"></i>Contraseña
                       </label>
                       <input
                         type="password"
@@ -140,7 +139,7 @@ export default function LoginPage() {
                     </div>
                     <div className="d-grid">
                       <button className="btn btn-primary btn-lg">
-                        <i className="fas fa-sign-in-alt me-2"></i>Ingresar
+                        <i className="fa-solid fa-right-to-bracket me-2"></i>Ingresar
                       </button>
                     </div>
                   </form>
@@ -151,7 +150,7 @@ export default function LoginPage() {
                       className="btn btn-outline-secondary"
                       onClick={() => setModo("registro")}
                     >
-                      <i className="fas fa-user-plus me-2"></i>Crear cuenta nueva
+                      <i className="fa-solid fa-user-plus me-2"></i>Crear cuenta nueva
                     </button>
                   </div>
                 </div>
@@ -167,14 +166,14 @@ export default function LoginPage() {
               <div className="card shadow">
                 <div className="card-header bg-success text-white">
                   <h2 className="mb-0">
-                    <i className="fas fa-user-plus me-2"></i>Crear Cuenta
+                    <i className="fa-solid fa-user-plus me-2"></i>Crear Cuenta
                   </h2>
                 </div>
                 <div className="card-body">
                   <form onSubmit={registrarUsuario}>
                     <div className="mb-3">
                       <label className="form-label">
-                        <i className="fas fa-user me-2"></i>Nombre completo
+                        <i className="fa-solid fa-user me-2"></i>Nombre completo
                       </label>
                       <input
                         type="text"
@@ -187,7 +186,7 @@ export default function LoginPage() {
                     </div>
                     <div className="mb-3">
                       <label className="form-label">
-                        <i className="fas fa-envelope me-2"></i>Correo electrónico
+                        <i className="fa-solid fa-envelope me-2"></i>Correo electrónico
                       </label>
                       <input
                         type="email"
@@ -200,7 +199,7 @@ export default function LoginPage() {
                     </div>
                     <div className="mb-3">
                       <label className="form-label">
-                        <i className="fas fa-lock me-2"></i>Contraseña
+                        <i className="fa-solid fa-lock me-2"></i>Contraseña
                       </label>
                       <input
                         type="password"
@@ -213,7 +212,7 @@ export default function LoginPage() {
                     </div>
                     <div className="mb-3">
                       <label className="form-label">
-                        <i className="fas fa-check-circle me-2"></i>Confirmar contraseña
+                        <i className="fa-solid fa-circle-check me-2"></i>Confirmar contraseña
                       </label>
                       <input
                         type="password"
@@ -226,7 +225,7 @@ export default function LoginPage() {
                     </div>
                     <div className="d-grid">
                       <button className="btn btn-success btn-lg">
-                        <i className="fas fa-user-plus me-2"></i>Registrarme
+                        <i className="fa-solid fa-user-plus me-2"></i>Registrarme
                       </button>
                     </div>
                   </form>
@@ -237,7 +236,7 @@ export default function LoginPage() {
                       className="btn btn-outline-secondary"
                       onClick={() => setModo("login")}
                     >
-                      <i className="fas fa-sign-in-alt me-2"></i>Iniciar sesión
+                      <i className="fa-solid fa-right-to-bracket me-2"></i>Iniciar sesión
                     </button>
                   </div>
                 </div>

@@ -1,51 +1,20 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 
 export default function SubastasPage() {
   const navigate = useNavigate();
-
   const [presupuesto, setPresupuesto] = useState(5000);
   const presupuestoMaximo = 100000;
   const [subastas, setSubastas] = useState([]);
   const [modal, setModal] = useState(null);
   const [productoGanado, setProductoGanado] = useState(null);
 
-  // 🔹 Inicializar subastas y presupuesto del usuario
-  useEffect(() => {
-    const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
-    if (!usuario) {
-      alert("Por favor inicia sesión primero");
-      navigate("/");
-      return;
-    }
-    setPresupuesto(usuario.presupuesto || 5000);
-
-    const lista = [
-      { id: 1, nombre: "Laptop Gamer", precio: 100, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/Lgamer.jpg" },
-      { id: 2, nombre: "Smartphone", precio: 250, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/cel.webp" },
-      { id: 3, nombre: "Auriculares", precio: 75, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/auri.jpg" },
-      { id: 4, nombre: "Carta Pokémon", precio: 1000, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/ctpokemon.jpg" },
-      { id: 5, nombre: "PlayStation 5", precio: 500, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/play5.jpg" },
-      { id: 6, nombre: "Bicicleta", precio: 300, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/bici.webp" },
-    ];
-    setSubastas(lista);
-  }, [navigate]);
-
-  const formatearDinero = (monto) =>
-    monto.toLocaleString("es-CL", { style: "currency", currency: "CLP" });
-
-  const formatearTiempo = (segundos) => {
-    const min = Math.floor(segundos / 60);
-    const sec = segundos % 60;
-    return `${min}:${sec < 10 ? "0" + sec : sec}`;
-  };
-
   // 🔹 Simulación de subastas con temporizador
-  const iniciarSubasta = (subasta) => {
+  const iniciarSubasta = useCallback((subasta) => {
     subasta.tiempo = Math.floor(Math.random() * (240 - 60 + 1)) + 60;
     actualizarSubasta(subasta);
     iniciarBot(subasta);
@@ -66,21 +35,20 @@ export default function SubastasPage() {
         })
       );
     }, 1000);
-  };
+  }, []);
 
   const iniciarBot = (subasta) => {
     const pujarBot = () => {
-      if (subasta.tiempo > 0) {
-        if (subasta.ganador !== "bot") {
-          subasta.precio += Math.floor(Math.random() * 20) + 5;
-          subasta.ganador = "bot";
-          actualizarSubasta(subasta);
-        }
-        let delay = Math.random() * 4000 + 2000;
-        if (subasta.precio >= 2000) delay *= 2;
-        if (subasta.precio >= 5000) delay *= 3;
-        setTimeout(() => pujarBot(), delay);
+      if (subasta.tiempo > 0 && subasta.ganador !== "bot") {
+        subasta.precio += Math.floor(Math.random() * 20) + 5;
+        subasta.ganador = "bot";
+        actualizarSubasta({ ...subasta });
       }
+
+      let delay = Math.random() * 4000 + 2000;
+      if (subasta.precio >= 2000) delay *= 2;
+      if (subasta.precio >= 5000) delay *= 3;
+      setTimeout(() => pujarBot(), delay);
     };
     setTimeout(() => pujarBot(), Math.random() * 3000 + 1000);
   };
@@ -100,7 +68,7 @@ export default function SubastasPage() {
     subasta.ganador = "usuario";
     subasta.ultimaPujaUsuario = subasta.precio;
     setPresupuesto((p) => p - 10);
-    actualizarSubasta(subasta);
+    actualizarSubasta({ ...subasta });
   };
 
   // 🔹 Finalizar subasta
@@ -124,7 +92,8 @@ export default function SubastasPage() {
       estado: "PENDIENTE_ENVIO",
     };
 
-    let productosGanados = JSON.parse(localStorage.getItem("productosGanados")) || [];
+    let productosGanados =
+      JSON.parse(localStorage.getItem("productosGanados")) || [];
     productosGanados.push(producto);
     localStorage.setItem("productosGanados", JSON.stringify(productosGanados));
 
@@ -142,10 +111,45 @@ export default function SubastasPage() {
     setPresupuesto((p) => p + monto);
   };
 
+  const formatearDinero = (monto) =>
+    monto.toLocaleString("es-CL", { style: "currency", currency: "CLP" });
+
+  const formatearTiempo = (segundos) => {
+    const min = Math.floor(segundos / 60);
+    const sec = segundos % 60;
+    return `${min}:${sec < 10 ? "0" + sec : sec}`;
+  };
+
+  // 🔹 Inicializar subastas y presupuesto del usuario
+  useEffect(() => {
+    const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+    if (!usuario) {
+      alert("Por favor inicia sesión primero");
+      navigate("/");
+      return;
+    }
+    setPresupuesto(usuario.presupuesto || 5000);
+
+    const lista = [
+      { id: 1, nombre: "Laptop Gamer", precio: 100, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/Lgamer.jpg" },
+      { id: 2, nombre: "Smartphone", precio: 250, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/cel.webp" },
+      { id: 3, nombre: "Auriculares", precio: 75, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/auri.jpg" },
+      { id: 4, nombre: "Carta Pokémon", precio: 1000, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/ctpokemon.jpg" },
+      { id: 5, nombre: "PlayStation 5", precio: 500, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/play5.jpg" },
+      { id: 6, nombre: "Bicicleta", precio: 300, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/bici.webp" },
+    ];
+
+    // 🔸 Mostrar en orden aleatorio
+    const subastasAleatorias = lista.sort(() => Math.random() - 0.5);
+    setSubastas(subastasAleatorias);
+
+    // 🔸 Iniciar automáticamente cada subasta
+    subastasAleatorias.forEach((s) => iniciarSubasta(s));
+  }, [navigate, iniciarSubasta]);
+
   // =================== UI ===================
   return (
     <>
-      {/* 🔹 Navbar global */}
       <Navbar />
 
       <main className="container mt-5">
@@ -183,11 +187,10 @@ export default function SubastasPage() {
                   </p>
                   <button
                     className="btn btn-primary w-100 mb-2"
-                    onClick={() =>
-                      subasta.tiempo > 0 ? pujar(subasta) : iniciarSubasta(subasta)
-                    }
+                    onClick={() => pujar(subasta)}
+                    disabled={subasta.tiempo <= 0}
                   >
-                    {subasta.tiempo > 0 ? "Pujar" : "Iniciar Subasta"}
+                    {subasta.tiempo > 0 ? "Pujar" : "Finalizada"}
                   </button>
 
                   {subasta.ultimaPujaUsuario && (
@@ -216,10 +219,8 @@ export default function SubastasPage() {
         </div>
       </main>
 
-      {/* 🔹 Footer global */}
       <Footer />
 
-      {/* 🔹 Modal Reclamar */}
       {modal === "reclamar" && productoGanado && (
         <div
           className="modal fade show d-block"
