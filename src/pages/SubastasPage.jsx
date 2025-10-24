@@ -14,45 +14,69 @@ export default function SubastasPage() {
   const [productoGanado, setProductoGanado] = useState(null);
 
   // 🔹 Simulación de subastas con temporizador
-  const iniciarSubasta = useCallback((subasta) => {
-    subasta.tiempo = Math.floor(Math.random() * (240 - 60 + 1)) + 60;
-    actualizarSubasta(subasta);
-    iniciarBot(subasta);
-
-    const intervalo = setInterval(() => {
+  const iniciarSubasta = useCallback(
+    (subasta) => {
+      const tiempoInicial = Math.floor(Math.random() * (240 - 60 + 1)) + 60;
       setSubastas((prev) =>
-        prev.map((s) => {
-          if (s.id === subasta.id) {
-            const nuevoTiempo = s.tiempo - 1;
-            if (nuevoTiempo <= 0) {
-              clearInterval(intervalo);
-              finalizarSubasta(s);
-              return { ...s, tiempo: 0 };
+        prev.map((s) =>
+          s.id === subasta.id ? { ...s, tiempo: tiempoInicial } : s
+        )
+      );
+
+      iniciarBot(subasta.id);
+
+      const intervalo = setInterval(() => {
+        setSubastas((prev) =>
+          prev.map((s) => {
+            if (s.id === subasta.id) {
+              const nuevoTiempo = s.tiempo - 1;
+              if (nuevoTiempo <= 0) {
+                clearInterval(intervalo);
+                finalizarSubasta(s);
+                return { ...s, tiempo: 0 };
+              }
+              return { ...s, tiempo: nuevoTiempo };
             }
-            return { ...s, tiempo: nuevoTiempo };
+            return s;
+          })
+        );
+      }, 1000);
+    },
+    [] // se mantiene estable
+  );
+
+  // 🔹 BOT que puja automáticamente
+  const iniciarBot = (idSubasta) => {
+    const pujarBot = () => {
+      setSubastas((prevSubastas) => {
+        const actualizadas = prevSubastas.map((s) => {
+          if (s.id === idSubasta && s.tiempo > 0) {
+            // Solo puja si no es el ganador actual
+            if (s.ganador !== "bot") {
+              const nuevoPrecio = s.precio + Math.floor(Math.random() * 20) + 5;
+              return { ...s, precio: nuevoPrecio, ganador: "bot" };
+            }
           }
           return s;
-        })
-      );
-    }, 1000);
-  }, []);
+        });
 
-  const iniciarBot = (subasta) => {
-    const pujarBot = () => {
-      if (subasta.tiempo > 0 && subasta.ganador !== "bot") {
-        subasta.precio += Math.floor(Math.random() * 20) + 5;
-        subasta.ganador = "bot";
-        actualizarSubasta({ ...subasta });
-      }
+        const subastaActual = actualizadas.find((s) => s.id === idSubasta);
+        if (subastaActual && subastaActual.tiempo > 0) {
+          let delay = Math.random() * 4000 + 2000;
+          if (subastaActual.precio >= 2000) delay *= 2;
+          if (subastaActual.precio >= 5000) delay *= 3;
+          setTimeout(() => pujarBot(), delay);
+        }
 
-      let delay = Math.random() * 4000 + 2000;
-      if (subasta.precio >= 2000) delay *= 2;
-      if (subasta.precio >= 5000) delay *= 3;
-      setTimeout(() => pujarBot(), delay);
+        return actualizadas;
+      });
     };
-    setTimeout(() => pujarBot(), Math.random() * 3000 + 1000);
+
+    // Primera puja del bot después de 1-4 segundos
+    setTimeout(() => pujarBot(), Math.random() * 7000 + 8000);
   };
 
+  // 🔹 Actualizar subasta
   const actualizarSubasta = (subasta) => {
     setSubastas((prev) =>
       prev.map((s) => (s.id === subasta.id ? { ...subasta } : s))
@@ -62,13 +86,22 @@ export default function SubastasPage() {
   // 🔹 Pujar manualmente
   const pujar = (subasta) => {
     if (subasta.tiempo <= 0) return;
-    if (presupuesto < 10) return alert("⚠️ No tienes suficiente presupuesto.");
+    if (presupuesto < 10)
+      return alert("⚠️ No tienes suficiente presupuesto.");
 
-    subasta.precio += 10;
-    subasta.ganador = "usuario";
-    subasta.ultimaPujaUsuario = subasta.precio;
+    const nuevaPuja = subasta.precio + 10;
+    const nuevaSubasta = {
+      ...subasta,
+      precio: nuevaPuja,
+      ganador: "usuario",
+      ultimaPujaUsuario: nuevaPuja,
+    };
+
     setPresupuesto((p) => p - 10);
-    actualizarSubasta({ ...subasta });
+    actualizarSubasta(nuevaSubasta);
+
+    // 🔸 Reacciona el bot después de una puja del usuario
+    setTimeout(() => iniciarBot(subasta.id), 1500);
   };
 
   // 🔹 Finalizar subasta
@@ -131,27 +164,71 @@ export default function SubastasPage() {
     setPresupuesto(usuario.presupuesto || 5000);
 
     const lista = [
-      { id: 1, nombre: "Laptop Gamer", precio: 100, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/Lgamer.jpg" },
-      { id: 2, nombre: "Smartphone", precio: 250, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/cel.webp" },
-      { id: 3, nombre: "Auriculares", precio: 75, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/auri.jpg" },
-      { id: 4, nombre: "Carta Pokémon", precio: 1000, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/ctpokemon.jpg" },
-      { id: 5, nombre: "PlayStation 5", precio: 500, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/play5.jpg" },
-      { id: 6, nombre: "Bicicleta", precio: 300, tiempo: 0, ganador: null, ultimaPujaUsuario: null, imagen: "Imagenes/bici.webp" },
+      {
+        id: 1,
+        nombre: "Laptop Gamer",
+        precio: 100,
+        tiempo: 0,
+        ganador: null,
+        ultimaPujaUsuario: null,
+        imagen: "Imagenes/Lgamer.jpg",
+      },
+      {
+        id: 2,
+        nombre: "Smartphone",
+        precio: 250,
+        tiempo: 0,
+        ganador: null,
+        ultimaPujaUsuario: null,
+        imagen: "Imagenes/cel.webp",
+      },
+      {
+        id: 3,
+        nombre: "Auriculares",
+        precio: 75,
+        tiempo: 0,
+        ganador: null,
+        ultimaPujaUsuario: null,
+        imagen: "Imagenes/auri.jpg",
+      },
+      {
+        id: 4,
+        nombre: "Carta Pokémon",
+        precio: 1000,
+        tiempo: 0,
+        ganador: null,
+        ultimaPujaUsuario: null,
+        imagen: "Imagenes/ctpokemon.jpg",
+      },
+      {
+        id: 5,
+        nombre: "PlayStation 5",
+        precio: 500,
+        tiempo: 0,
+        ganador: null,
+        ultimaPujaUsuario: null,
+        imagen: "Imagenes/play5.jpg",
+      },
+      {
+        id: 6,
+        nombre: "Bicicleta",
+        precio: 300,
+        tiempo: 0,
+        ganador: null,
+        ultimaPujaUsuario: null,
+        imagen: "Imagenes/bici.webp",
+      },
     ];
 
-    // 🔸 Mostrar en orden aleatorio
     const subastasAleatorias = lista.sort(() => Math.random() - 0.5);
     setSubastas(subastasAleatorias);
 
-    // 🔸 Iniciar automáticamente cada subasta
     subastasAleatorias.forEach((s) => iniciarSubasta(s));
   }, [navigate, iniciarSubasta]);
 
   // =================== UI ===================
   return (
     <>
-      <Navbar />
-
       <main className="container mt-5">
         <div className="text-end mb-3">
           <span className="badge bg-success fs-6">
@@ -195,7 +272,8 @@ export default function SubastasPage() {
 
                   {subasta.ultimaPujaUsuario && (
                     <p className="text-success">
-                      Tu última puja: {formatearDinero(subasta.ultimaPujaUsuario)}
+                      Tu última puja:{" "}
+                      {formatearDinero(subasta.ultimaPujaUsuario)}
                     </p>
                   )}
 
@@ -209,7 +287,7 @@ export default function SubastasPage() {
                     >
                       {subasta.ganador === "usuario"
                         ? "¡Ganaste! 🎉"
-                        : "Perdiste... 👤"}
+                        : "Gano user235 👤"}
                     </p>
                   )}
                 </div>
@@ -218,8 +296,6 @@ export default function SubastasPage() {
           ))}
         </div>
       </main>
-
-      <Footer />
 
       {modal === "reclamar" && productoGanado && (
         <div
@@ -250,7 +326,9 @@ export default function SubastasPage() {
                 </p>
                 <p>
                   Precio final:{" "}
-                  <strong>{formatearDinero(productoGanado.ultimaPujaUsuario)}</strong>
+                  <strong>
+                    {formatearDinero(productoGanado.ultimaPujaUsuario)}
+                  </strong>
                 </p>
                 <div className="alert alert-info">
                   Para completar tu compra, configura el envío.

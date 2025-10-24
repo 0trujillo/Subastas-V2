@@ -66,8 +66,7 @@ export default function EnvioPage() {
 
   return (
     <>
-      {/* 🔹 Navbar global */}
-      <Navbar />
+
 
       {/* 🔹 Contenido principal */}
       <main className="container mt-5">
@@ -168,8 +167,7 @@ export default function EnvioPage() {
         )}
       </main>
 
-      {/* 🔹 Footer global */}
-      <Footer />
+
 
       {/* 🔹 Modal configuración envío */}
       {modalProducto && (
