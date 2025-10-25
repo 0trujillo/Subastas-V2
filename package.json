@@ -46,13 +46,17 @@
     "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
     "@babel/preset-react": "^7.28.5",
-    "@testing-library/react-hooks": "^8.0.1",
+    "ajv": "^6.12.6",
+    "ajv-keywords": "^3.5.2",
     "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
     "jasmine-core": "^5.12.0",
     "karma": "^6.4.4",
     "karma-chrome-launcher": "^3.2.0",
     "karma-jasmine": "^5.1.0",
     "karma-webpack": "^5.0.1",
+    "null-loader": "^4.0.1",
+    "style-loader": "^4.0.0",
     "webpack": "^5.102.1",
     "webpack-cli": "^6.0.1"
   }

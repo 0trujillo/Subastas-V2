@@ -3,18 +3,35 @@ import SubastasPage from "../pages/SubastasPage.jsx";
 import EnvioPage from "../pages/EnvioPage.jsx";
 import LoginPage from "../pages/LoginPage.jsx";
 
+// 🧩 Mock seguro de localStorage (sin sobrescribir el objeto)
+const mockStorage = (() => {
+  let store = {};
+  return {
+    getItem: (key) => (key in store ? store[key] : null),
+    setItem: (key, value) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+  };
+})();
 
-// Mock de localStorage
-const mockStorage = {};
-global.localStorage = {
-  getItem: (key) => mockStorage[key] || null,
-  setItem: (key, value) => (mockStorage[key] = value),
-  removeItem: (key) => delete mockStorage[key],
-};
+// Define la propiedad solo si no está configurada correctamente
+beforeAll(() => {
+  Object.defineProperty(window, "localStorage", {
+    value: mockStorage,
+    configurable: true,
+    writable: false,
+  });
+});
 
 describe("🔹 LoginPage Tests", () => {
   beforeEach(() => {
-    localStorage.removeItem("usuarios");
+    localStorage.clear();
   });
 
   it("debe registrar un nuevo usuario", () => {
@@ -77,7 +94,11 @@ describe("🔹 SubastasPage Logic", () => {
 describe("🔹 EnvioPage Logic", () => {
   it("debe configurar dirección de envío correctamente", () => {
     const producto = { id: 1, estado: "PENDIENTE_ENVIO" };
-    const actualizado = { ...producto, direccion: "Calle Falsa 123", estado: "ENVIADO" };
+    const actualizado = {
+      ...producto,
+      direccion: "Calle Falsa 123",
+      estado: "ENVIADO",
+    };
     expect(actualizado.estado).toBe("ENVIADO");
     expect(actualizado.direccion).toContain("Calle Falsa");
   });
