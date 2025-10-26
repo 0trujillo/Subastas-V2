@@ -4,62 +4,56 @@ module.exports = function (config) {
     frameworks: ['jasmine'],
 
     files: [
-      // Archivos de prueba
       { pattern: 'src/tests/**/*.spec.js', watched: false },
-
-      // Archivos estáticos (imágenes en public/Imagenes)
       { pattern: 'public/Imagenes/**/*', watched: false, included: false, served: true, nocache: false },
-
-      // 👇 Servir las fuentes de Font Awesome
       { pattern: 'node_modules/font-awesome/fonts/**/*', watched: false, included: false, served: true }
     ],
 
     proxies: {
-      // Redirige las rutas /Imagenes/... al contenido real
       '/Imagenes/': '/base/public/Imagenes/',
-
-      // 👇 Redirige las rutas /fonts/... al contenido real
       '/fonts/': '/base/node_modules/font-awesome/fonts/'
     },
 
     preprocessors: {
-      'src/tests/**/*.spec.js': ['webpack']
+      'src/**/*.js': ['webpack', 'coverage'], // <--- instrumenta todo el código fuente
+      'src/**/*.jsx': ['webpack', 'coverage'], // <--- también los componentes React
+      'src/tests/**/*.spec.js': ['webpack'] // los tests se compilan, pero no se cubren
     },
 
     webpack: {
       mode: 'development',
       output: {
-        publicPath: '/', // asegura rutas correctas
+        publicPath: '/',
       },
       module: {
-      rules: [
-        {
-          test: /\.(js|jsx)$/,
-          exclude: /node_modules/,
-          use: {
-            loader: 'babel-loader'
+        rules: [
+          {
+            test: /\.(js|jsx)$/,
+            exclude: /node_modules/,
+            use: {
+              loader: 'babel-loader',
+              options: {
+                presets: ['@babel/preset-env', '@babel/preset-react']
+              }
+            }
+          },
+          {
+            test: /\.css$/,
+            use: ['style-loader', 'css-loader']
+          },
+          {
+            test: /\.(eot|woff|woff2|ttf|svg)(\?v=\d+\.\d+\.\d+)?$/,
+            type: 'asset/resource',
+            generator: {
+              filename: '[name][ext]'
+            }
+          },
+          {
+            test: /\.(png|jpg|jpeg|gif|webp)$/i,
+            type: 'asset/resource'
           }
-        },
-        {
-          test: /\.css$/,
-          use: ['style-loader', 'css-loader']
-        },
-        {
-          // Ignora archivos de fuentes o SVGs con parámetros de versión (?v=...)
-          test: /\.(eot|woff|woff2|ttf|svg)(\?v=\d+\.\d+\.\d+)?$/,
-          type: 'asset/resource',
-          generator: {
-            filename: '[name][ext]'
-          }
-        },
-        {
-          // Archivos de imagen normales
-          test: /\.(png|jpg|jpeg|gif|webp)$/i,
-          type: 'asset/resource'
-        }
-      ]
-    },
-
+        ]
+      },
       resolve: {
         extensions: ['.js', '.jsx']
       }
@@ -69,7 +63,18 @@ module.exports = function (config) {
       stats: 'errors-only'
     },
 
-    reporters: ['progress'],
+    // 💡 Agrega el reporter de cobertura
+    reporters: ['progress', 'coverage'],
+
+    // 💡 Configuración de cobertura
+    coverageReporter: {
+      dir: 'coverage/',       // Carpeta donde se guardará el reporte
+      reporters: [
+        { type: 'html', subdir: '.' },    // Reporte visual HTML
+        { type: 'text-summary' }          // Resumen en consola
+      ]
+    },
+
     browsers: ['ChromeHeadless'],
     singleRun: true,
     concurrency: Infinity
