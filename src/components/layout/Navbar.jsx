@@ -3,14 +3,17 @@ import { Link, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 
-export default function Navbar() {
-  const navigate = useNavigate();
+export default function Navbar({ navigate: injectedNavigate }) {
+  // ✅ useNavigate se llama siempre, nunca condicionalmente
+  const defaultNavigate = useNavigate();
+  const navigate = injectedNavigate || defaultNavigate;
+
   const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
 
   const cerrarSesion = () => {
     if (window.confirm("¿Seguro que deseas cerrar sesión?")) {
       localStorage.removeItem("usuarioActual");
-      navigate("/");
+      navigate("/"); // ✅ siempre seguro
     }
   };
 
@@ -62,7 +65,8 @@ export default function Navbar() {
                         className="dropdown-item text-danger"
                         onClick={cerrarSesion}
                       >
-                        <i className="fas fa-sign-out-alt me-2"></i>Cerrar sesión
+                        <i className="fas fa-sign-out-alt me-2"></i>
+                        Cerrar sesión
                       </button>
                     </li>
                   </ul>
