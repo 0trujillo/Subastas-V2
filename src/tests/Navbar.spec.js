@@ -44,7 +44,7 @@ describe("Navbar", () => {
       </MemoryRouter>
     );
 
-    fireEvent.click(screen.getByText(/Cerrar sesión/i));
+    fireEvent.click(screen.getByText(/Salir/i));
     expect(localStorage.getItem("usuarioActual")).toBeNull();
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
