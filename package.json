@@ -11,6 +11,7 @@
     "bootstrap": "^5.3.8",
     "canvas-confetti": "^1.9.4",
     "font-awesome": "^4.7.0",
+    "framer-motion": "^12.23.24",
     "react": "^19.1.1",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.1.1",

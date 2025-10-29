@@ -1,8 +1,6 @@
 // src/pages/EnvioPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
-import Footer from "../components/layout/Footer";
 import ProductoEnvioCard from "../components/envios/ProductoEnvioCard";
 import ModalEnvio from "../components/envios/ModalEnvio";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -53,7 +51,7 @@ export default function EnvioPage() {
 
   return (
     <>
-      <Navbar />
+    
 
       <main className="container mt-5">
         <div className="d-flex justify-content-between mb-3">
@@ -99,7 +97,7 @@ export default function EnvioPage() {
         />
       )}
 
-      <Footer />
+    
     </>
   );
 }

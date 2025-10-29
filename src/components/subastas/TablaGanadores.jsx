@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 export default function TablaGanadores({ ganadores }) {
-  const [lista, setLista] = useState(ganadores);
+  const lista = ganadores && ganadores.length > 0
+    ? ganadores
+    : JSON.parse(localStorage.getItem("ganadores")) || [];
 
-  // Sincronizar con localStorage si cambia externamente
-  useEffect(() => {
-    const guardados = JSON.parse(localStorage.getItem("ganadores")) || [];
-    setLista(guardados);
-  }, [ganadores]);
+  // Mostrar solo los últimos 10, del más reciente al más antiguo
+  const ultimos10 = lista.slice(-10).reverse();
 
   return (
     <div className="card mt-5 shadow">
       <div className="card-header bg-warning text-dark fw-bold">
-        🏆 Últimos Ganadores
+        🏆 Últimas 10 subastas ganadas
       </div>
       <div className="table-responsive">
         <table className="table table-striped align-middle mb-0">
@@ -25,8 +24,8 @@ export default function TablaGanadores({ ganadores }) {
             </tr>
           </thead>
           <tbody>
-            {lista.length > 0 ? (
-              lista.map((g, i) => (
+            {ultimos10.length > 0 ? (
+              ultimos10.map((g, i) => (
                 <tr key={i}>
                   <td>{g.nombre}</td>
                   <td>{g.usuario}</td>
