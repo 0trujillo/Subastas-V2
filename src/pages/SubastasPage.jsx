@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import ModalReclamar from "../components/subastas/ModalReclamar";
 import TablaGanadores from "../components/subastas/TablaGanadores";
 import ListaSubastas from "../components/subastas/ListaSubastas";
-import useBotLogic from "../hooks/useBotLogic"; // <-- 1. IMPORTAMOS EL NUEVO HOOK
+import useBotLogic from "../hooks/useBotLogic";
+import PanelCuenta from "../components/subastas/PanelCuenta"; // <-- Ya lo tienes importado, ¡genial!
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
@@ -16,12 +17,12 @@ export default function SubastasPage() {
   const [productoGanado, setProductoGanado] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [ganadores, setGanadores] = useState([]);
-  const [panelVisible, setPanelVisible] = useState(false);
+  // const [panelVisible, setPanelVisible] = useState(false); // <-- 1. ELIMINAMOS ESTE ESTADO
   const presupuestoMaximo = 100000;
 
-  // <-- 2. LLAMAMOS AL HOOK Y LE PASAMOS LA FUNCIÓN PARA ACTUALIZAR EL ESTADO
   useBotLogic(setSubastas);
 
+  // ... (useEffect de Inicialización y Temporizador se mantienen igual) ...
   // 🧩 Inicialización
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
@@ -64,7 +65,7 @@ export default function SubastasPage() {
 
             setGanadores((prevG) => {
               const yaExiste = prevG.some(
-                (g) => g.nombre === nuevoGanado.nombre && g.precio === nuevoGanador.precio
+                (g) => g.nombre === nuevoGanador.nombre && g.precio === nuevoGanador.precio
               );
               if (yaExiste) return prevG;
 
@@ -110,9 +111,9 @@ export default function SubastasPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // <-- 3. HEMOS ELIMINADO EL ANTIGUO useEffect DE LOS BOTS DE AQUÍ
 
-  // 👨‍💻 Pujar manualmente
+  // ... (pujar, lanzarConfeti, reclamarSubasta se mantienen igual) ...
+  // 👨‍💻 Pujar manually
   const pujar = (subasta) => {
     if (presupuesto < 10) {
       alert("⚠️ No tienes suficiente presupuesto.");
@@ -157,7 +158,7 @@ export default function SubastasPage() {
     setTimeout(() => navigate("/envios"), 800);
   };
 
-  // 💸 Recargar presupuesto
+  // 💸 Recargar presupuesto (Esta función se queda aquí)
   const recargar = (monto) => {
     setPresupuesto((p) => {
       if (p + monto > presupuestoMaximo) {
@@ -168,66 +169,23 @@ export default function SubastasPage() {
     });
   };
 
+  // Esta función se queda aquí
   const formatearDinero = (monto) =>
     monto.toLocaleString("es-CL", { style: "currency", currency: "CLP" });
 
   return (
     <>
+      {/* 2. AÑADIMOS EL NUEVO COMPONENTE Y LE PASAMOS PROPS */}
+      <PanelCuenta
+        presupuesto={presupuesto}
+        formatearDinero={formatearDinero}
+        onRecargar={recargar}
+        onVerEnvios={() => navigate("/envios")}
+      />
+
       <main className="container mt-5 position-relative">
-        {/* 💲 Botón flotante */}
-        <button
-          className="btn btn-primary rounded-circle shadow-lg position-fixed"
-          style={{
-            bottom: "30px",
-            right: "30px",
-            width: "60px",
-            height: "60px",
-            zIndex: 1050,
-            fontSize: "1.5rem",
-          }}
-          onClick={() => setPanelVisible((p) => !p)}
-          title="Mi Cuenta"
-        >
-          💲
-        </button>
-
-        {/* 💼 Panel lateral colapsable */}
-        {panelVisible && (
-          <div
-            className="card position-fixed end-0 top-50 translate-middle-y p-3 shadow bg-light border-0"
-            style={{
-              width: "260px",
-              zIndex: 1040,
-              transition: "all 0.3s ease",
-            }}
-          >
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h6 className="text-primary fw-bold mb-0">👤 Mi Cuenta</h6>
-              <button
-                className="btn btn-sm btn-outline-danger rounded-circle"
-                onClick={() => setPanelVisible(false)}
-              >
-                ✖
-              </button>
-            </div>
-
-            <p>
-              Presupuesto: <strong>{formatearDinero(presupuesto)}</strong>
-            </p>
-            <button
-              className="btn btn-success btn-sm w-100 mb-2"
-              onClick={() => recargar(1000)}
-            >
-              💸 Recargar $1,000
-            </button>
-            <button
-              className="btn btn-info btn-sm w-100"
-              onClick={() => navigate("/envios")}
-            >
-              📦 Mis Envíos
-            </button>
-          </div>
-        )}
+        
+        {/* 3. ELIMINAMOS EL BOTÓN FLOTANTE Y EL PANEL LATERAL DE AQUÍ */}
 
         {/* 🏅 Banner de ganador */}
         {ganadores.length > 0 && (
