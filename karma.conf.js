@@ -4,6 +4,7 @@ module.exports = function (config) {
     frameworks: ['jasmine'],
 
     files: [
+      // Tus tests se incluyen, pero no se instrumentan
       { pattern: 'src/tests/**/*.spec.js', watched: false },
       { pattern: 'public/Imagenes/**/*', watched: false, included: false, served: true, nocache: false },
       { pattern: 'node_modules/font-awesome/fonts/**/*', watched: false, included: false, served: true }
@@ -15,9 +16,12 @@ module.exports = function (config) {
     },
 
     preprocessors: {
-      'src/**/*.js': ['webpack', 'coverage'], // <--- instrumenta todo el código fuente
-      'src/**/*.jsx': ['webpack', 'coverage'], // <--- también los componentes React
-      'src/tests/**/*.spec.js': ['webpack'] // los tests se compilan, pero no se cubren
+      // Instrumenta todo el código de la aplicación (JS y JSX)
+      'src/**/*.js': ['webpack', 'coverage'],
+      'src/**/*.jsx': ['webpack', 'coverage'],
+
+      // Los tests solo se compilan
+      'src/tests/**/*.spec.js': ['webpack']
     },
 
     webpack: {
@@ -63,16 +67,15 @@ module.exports = function (config) {
       stats: 'errors-only'
     },
 
-    // 💡 Agrega el reporter de cobertura
     reporters: ['progress', 'coverage'],
 
-    // 💡 Configuración de cobertura
     coverageReporter: {
-      dir: 'coverage/',       // Carpeta donde se guardará el reporte
+      dir: 'coverage/',
       reporters: [
-        { type: 'html', subdir: '.' },    // Reporte visual HTML
-        { type: 'text-summary' }          // Resumen en consola
-      ]
+        { type: 'html', subdir: '.' },
+        { type: 'text-summary' }
+      ],
+      includeAllSources: true // asegura que todos los archivos de la app se midan
     },
 
     browsers: ['ChromeHeadless'],
