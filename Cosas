@@ -1,6 +1,0 @@
-#llave ssh
-#ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII5+SQPKJT6AZJO76suIiNFWTByLoxCK+XnKjR9hWs9G di.peguero@duocuc.cl
-#npm install --save-dev karma-webpack webpack webpack-cli babel-loader @babel/core @babel/preset-env
-#npm install --save-dev karma-webpack webpack webpack-cli babel-loader @babel/core @babel/preset-env
-# Remove-Item -Recurse -Force node_modules, package-lock.json
-#Remove-Item -Recurse -Force "C:\Users\yojan\AppData\Local\Temp\_karma_webpack_*"
