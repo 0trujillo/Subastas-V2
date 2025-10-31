@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalReclamar from "../components/subastas/ModalReclamar";
 import TablaGanadores from "../components/subastas/TablaGanadores";
+import ListaSubastas from "../components/subastas/ListaSubastas";
+import useBotLogic from "../hooks/useBotLogic"; // <-- 1. IMPORTAMOS EL NUEVO HOOK
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 import confetti from "canvas-confetti";
@@ -15,6 +18,9 @@ export default function SubastasPage() {
   const [ganadores, setGanadores] = useState([]);
   const [panelVisible, setPanelVisible] = useState(false);
   const presupuestoMaximo = 100000;
+
+  // <-- 2. LLAMAMOS AL HOOK Y LE PASAMOS LA FUNCIÓN PARA ACTUALIZAR EL ESTADO
+  useBotLogic(setSubastas);
 
   // 🧩 Inicialización
   useEffect(() => {
@@ -58,7 +64,7 @@ export default function SubastasPage() {
 
             setGanadores((prevG) => {
               const yaExiste = prevG.some(
-                (g) => g.nombre === nuevoGanador.nombre && g.precio === nuevoGanador.precio
+                (g) => g.nombre === nuevoGanado.nombre && g.precio === nuevoGanador.precio
               );
               if (yaExiste) return prevG;
 
@@ -104,42 +110,7 @@ export default function SubastasPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // 🤖 Bots
-  useEffect(() => {
-    const bots = [
-      { nombre: "User2314", agresividad: 0.5, incrementoMax: 20 },
-      { nombre: "User000", agresividad: 0.5, incrementoMax: 20 },
-      { nombre: "User9875", agresividad: 0.5, incrementoMax: 20 },
-    ];
-
-    const intervaloBots = setInterval(() => {
-      setSubastas((prev) =>
-        prev.map((s) => {
-          if (s.tiempo <= 0) return s;
-          const bot = bots[Math.floor(Math.random() * bots.length)];
-          const probabilidad = Math.random();
-
-          const puedePujar =
-            probabilidad < bot.agresividad ||
-            !s.ganador ||
-            s.ganador === "usuario";
-
-          if (puedePujar && s.precio < 3000) {
-            const incremento = Math.floor(Math.random() * bot.incrementoMax) + 5;
-            return {
-              ...s,
-              precio: s.precio + incremento,
-              ganador: bot.nombre,
-            };
-          }
-
-          return s;
-        })
-      );
-    }, 2500);
-
-    return () => clearInterval(intervaloBots);
-  }, []);
+  // <-- 3. HEMOS ELIMINADO EL ANTIGUO useEffect DE LOS BOTS DE AQUÍ
 
   // 👨‍💻 Pujar manualmente
   const pujar = (subasta) => {
@@ -280,72 +251,7 @@ export default function SubastasPage() {
         </h2>
 
         {/* 🧩 Lista de subastas */}
-        <div className="row">
-          {subastas.map((subasta) => (
-            <div className="col-md-4 mb-4" key={subasta.id}>
-              <div className="card shadow-sm border-0">
-                <img
-                  src={subasta.imagen}
-                  alt={subasta.nombre}
-                  className="card-img-top"
-                  style={{ height: "220px", objectFit: "cover" }}
-                />
-                <div className="card-body text-center">
-                  <h5>{subasta.nombre}</h5>
-                  <p className="mb-1">
-                    Precio actual: <strong>${subasta.precio}</strong>
-                  </p>
-
-                  <div className="progress my-2" style={{ height: "8px" }}>
-                    <div
-                      className="progress-bar bg-success"
-                      role="progressbar"
-                      style={{
-                        width: `${subasta.tiempo > 0 ? (subasta.tiempo / 60) * 100 : 0}%`,
-                      }}
-                    ></div>
-                  </div>
-                  <small className="text-muted d-block mb-1">
-                    ⏳ {subasta.tiempo}s restantes
-                  </small>
-
-                  <div className="mb-2">
-                    {subasta.ganador === "usuario" ? (
-                      <span className="badge bg-success">🏆 Vas ganando</span>
-                    ) : subasta.ganador ? (
-                      <span className="badge bg-warning text-dark">
-                        👤 {subasta.ganador} va ganando
-                      </span>
-                    ) : (
-                      <span className="badge bg-secondary">Sin pujas aún</span>
-                    )}
-                  </div>
-
-                  <button
-                    className="btn btn-primary w-100 mt-1"
-                    onClick={() => pujar(subasta)}
-                    disabled={subasta.tiempo <= 0}
-                  >
-                    {subasta.tiempo > 0 ? "Pujar" : "Finalizada"}
-                  </button>
-
-                  {subasta.tiempo <= 0 && subasta.ganador && (
-                    <div
-                      className={`alert ${
-                        subasta.ganador === "usuario"
-                          ? "alert-success"
-                          : "alert-warning"
-                      } mt-2 py-1`}
-                    >
-                      🏁 Ganador final:{" "}
-                      {subasta.ganador === "usuario" ? "Tú" : subasta.ganador}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ListaSubastas subastas={subastas} onPujar={pujar} />
 
         {/* 🏆 Tabla de ganadores */}
         <TablaGanadores ganadores={ganadores} />
@@ -362,3 +268,4 @@ export default function SubastasPage() {
     </>
   );
 }
+

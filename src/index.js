@@ -1,16 +1,18 @@
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
-
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "./index.css";   // estilos base de create-react-app
-import "./styles.css";  // 🎨 tu tema personalizado
-import reportWebVitals from "./reportWebVitals";
+
+//  Estilos globales
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "./index.css";
+import "./styles.css";
 
 
-// Crear raíz de React 18
+import reportWebVitals from "./reportWebVitals";
+
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
@@ -19,5 +21,5 @@ root.render(
   </React.StrictMode>
 );
 
-// Métricas opcionales
+
 reportWebVitals();
