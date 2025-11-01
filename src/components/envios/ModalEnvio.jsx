@@ -72,10 +72,11 @@ export default function ModalEnvio({
 
             {/* Campos del formulario */}
             <div className="form-group mb-2">
-              <label className="form-label fw-semibold">
+              <label htmlFor="nombre" className="form-label fw-semibold">
                 <i className="fas fa-user me-2 text-primary"></i>Nombre completo
               </label>
               <input
+                id="nombre"
                 type="text"
                 className="form-control"
                 value={nombre}
@@ -85,10 +86,11 @@ export default function ModalEnvio({
             </div>
 
             <div className="form-group mb-2">
-              <label className="form-label fw-semibold">
+              <label htmlFor="telefono" className="form-label fw-semibold">
                 <i className="fas fa-phone me-2 text-primary"></i>Teléfono
               </label>
               <input
+                id="telefono"
                 type="tel"
                 className="form-control"
                 value={telefono}
@@ -98,10 +100,11 @@ export default function ModalEnvio({
             </div>
 
             <div className="form-group mb-2">
-              <label className="form-label fw-semibold">
+              <label htmlFor="direccion" className="form-label fw-semibold">
                 <i className="fas fa-map-marker-alt me-2 text-primary"></i>Dirección
               </label>
               <input
+                id="direccion"
                 type="text"
                 className="form-control"
                 value={direccion}
@@ -111,10 +114,11 @@ export default function ModalEnvio({
             </div>
 
             <div className="form-group mb-2">
-              <label className="form-label fw-semibold">
+              <label htmlFor="ciudad" className="form-label fw-semibold">
                 <i className="fas fa-city me-2 text-primary"></i>Ciudad
               </label>
               <input
+                id="ciudad"
                 type="text"
                 className="form-control"
                 value={ciudad}
@@ -124,10 +128,11 @@ export default function ModalEnvio({
             </div>
 
             <div className="form-group mb-2">
-              <label className="form-label fw-semibold">
+              <label htmlFor="region" className="form-label fw-semibold">
                 <i className="fas fa-globe-americas me-2 text-primary"></i>Región
               </label>
               <input
+                id="region"
                 type="text"
                 className="form-control"
                 value={region}

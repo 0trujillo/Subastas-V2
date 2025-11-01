@@ -1,9 +1,10 @@
 import React from "react";
 
 export default function TablaGanadores({ ganadores }) {
-  const lista = ganadores && ganadores.length > 0
-    ? ganadores
-    : JSON.parse(localStorage.getItem("ganadores")) || [];
+  const lista =
+    ganadores && ganadores.length > 0
+      ? ganadores
+      : JSON.parse(localStorage.getItem("ganadores")) || [];
 
   // Mostrar solo los últimos 10, del más reciente al más antiguo
   const ultimos10 = lista.slice(-10).reverse();
@@ -27,10 +28,10 @@ export default function TablaGanadores({ ganadores }) {
             {ultimos10.length > 0 ? (
               ultimos10.map((g, i) => (
                 <tr key={i}>
-                  <td>{g.nombre}</td>
+                  <td>{g.producto}</td> {}
                   <td>{g.usuario}</td>
-                  <td>${g.precio}</td>
-                  <td>{new Date(g.fecha).toLocaleString()}</td>
+                  <td>${g.monto}</td> {}
+                  <td>{g.fecha ? new Date(g.fecha).toLocaleString() : '—'}</td> {}
                 </tr>
               ))
             ) : (

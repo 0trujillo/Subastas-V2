@@ -42,7 +42,6 @@ describe('ModalEnvio Component (con Jasmine)', () => {
 
   // --- 3. TEST (Renderizado) ---
   it('Debe renderizar el nombre y la imagen del producto que se recibe por props', () => {
-
     // 1. Buscamos el nombre del producto
     const nombreProducto = screen.getByText('Laptop Gamer');
     expect(nombreProducto).toBeTruthy();
@@ -61,7 +60,6 @@ describe('ModalEnvio Component (con Jasmine)', () => {
 
   // --- 4. TEST (Validación de campos vacíos) ---
   it('Debe mostrar un mensaje de advertencia si se presiona “Guardar Envío” con campos vacíos', async () => {
-
     // 1. Buscamos el botón de guardar
     const botonGuardar = screen.getByText('Guardar Envío');
 
@@ -80,22 +78,22 @@ describe('ModalEnvio Component (con Jasmine)', () => {
 
   // --- 5. TEST (Simulación de llenado de formulario y guardado) ---
   it('Debe llamar a onGuardar con los datos correctos si todos los campos están llenos', async () => {
-
     // 1. Instalamos el reloj falso de Jasmine
     jasmine.clock().install();
 
     // 2. Llenamos todos los campos del formulario
-    const inputNombre = screen.getByPlaceholderText('Nombre completo');
-    const inputTelefono = screen.getByPlaceholderText('Teléfono');
-    const inputCiudad = screen.getByPlaceholderText('Ciudad');
-    const inputRegion = screen.getByPlaceholderText('Región');
-    const inputDireccion = screen.getByDisplayValue('Calle Falsa 123');
+    const inputNombre = screen.getByLabelText(/nombre completo/i);
+    const inputTelefono = screen.getByLabelText(/teléfono/i);
+    const inputDireccion = screen.getByLabelText(/dirección/i);
+    const inputCiudad = screen.getByLabelText(/ciudad/i);
+    const inputRegion = screen.getByLabelText(/región/i);
 
     await act(async () => {
       fireEvent.change(inputNombre, { target: { value: 'Juan Pérez' } });
       fireEvent.change(inputTelefono, { target: { value: '+56912345678' } });
       fireEvent.change(inputCiudad, { target: { value: 'Santiago' } });
       fireEvent.change(inputRegion, { target: { value: 'Metropolitana' } });
+      fireEvent.change(inputDireccion, { target: { value: 'Calle Falsa 123' } });
     });
 
     // 3. Hacemos clic en guardar
