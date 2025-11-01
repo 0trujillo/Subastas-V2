@@ -15,10 +15,10 @@ const mockSubastas = [
   },
   { 
     id: 2, 
-    nombre: "Smartphone", 
+    nombre: "Bicicleta", 
     precio: 250, 
     tiempo: 70, 
-    imagen: "celular.webp",
+    imagen: "bici.webp",
     ganador: "User123"
   },
 ];

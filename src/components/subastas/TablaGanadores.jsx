@@ -28,10 +28,10 @@ export default function TablaGanadores({ ganadores }) {
             {ultimos10.length > 0 ? (
               ultimos10.map((g, i) => (
                 <tr key={i}>
-                  <td>{g.producto}</td> {}
+                  <td>{g.producto}</td>
                   <td>{g.usuario}</td>
-                  <td>${g.monto}</td> {}
-                  <td>{g.fecha ? new Date(g.fecha).toLocaleString() : '—'}</td> {}
+                  <td>${g.monto}</td>
+                  <td>{g.fecha ? new Date(g.fecha).toLocaleString() : "—"}</td>
                 </tr>
               ))
             ) : (
