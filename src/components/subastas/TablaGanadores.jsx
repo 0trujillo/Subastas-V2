@@ -6,7 +6,7 @@ export default function TablaGanadores({ ganadores }) {
       ? ganadores
       : JSON.parse(localStorage.getItem("ganadores")) || [];
 
-  // Mostrar solo los últimos 10, del más reciente al más antiguo
+  // Mostrar solo los últimos 10 (más recientes primero)
   const ultimos10 = lista.slice(-10).reverse();
 
   return (
@@ -28,12 +28,12 @@ export default function TablaGanadores({ ganadores }) {
             {ultimos10.length > 0 ? (
               ultimos10.map((g, i) => (
                 <tr key={i}>
-                  <td>{g.producto}</td>
+                  <td>{g.nombre}</td> {/* antes era g.producto */}
                   <td>{g.usuario}</td>
-                  <td>${g.monto}</td>
+                  <td>${g.precio}</td> {/* antes era g.monto */}
                   <td>{g.fecha ? new Date(g.fecha).toLocaleString() : "—"}</td>
                 </tr>
-              ))
+              ))  
             ) : (
               <tr>
                 <td colSpan="4" className="text-center text-muted">
