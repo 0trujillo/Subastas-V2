@@ -18,8 +18,8 @@ Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
 const ganadoresEjemplo = Array.from({ length: 12 }, (_, i) => ({
   id: i + 1,
   usuario: `Usuario ${i + 1}`,
-  producto: `Producto ${i + 1}`,
-  monto: 1000 + i * 100,
+  nombre: `Producto ${i + 1}`, // ← antes era "producto"
+  precio: 1000 + i * 100,      // ← antes era "monto"
 }));
 
 // --- TESTS ---
@@ -47,7 +47,7 @@ describe('TablaGanadores Component (con Jasmine)', () => {
 
   // --- 3 ---
   it('Debe usar localStorage si las props de "ganadores" están vacías', () => {
-    const ganadoresGuardados = [{ usuario: 'Pedro', producto: 'TV', monto: 2000 }];
+    const ganadoresGuardados = [{ usuario: 'Pedro', nombre: 'TV', precio: 2000 }];
     window.localStorage.getItem.and.returnValue(JSON.stringify(ganadoresGuardados));
 
     render(<TablaGanadores ganadores={[]} />);

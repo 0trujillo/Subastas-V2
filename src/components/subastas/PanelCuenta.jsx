@@ -11,7 +11,7 @@ import React, { useState } from "react";
  * @param {function} props.formatearDinero - Función para dar formato de moneda.
  */
 export default function PanelCuenta({ presupuesto, onRecargar, onVerEnvios, formatearDinero }) {
-  // Este componente ahora maneja su propio estado de visibilidad
+
   const [panelVisible, setPanelVisible] = useState(false);
 
   return (

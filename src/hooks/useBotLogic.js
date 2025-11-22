@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 
 // Definimos los bots fuera del hook para que no se re-creen
 const bots = [
-  { nombre: "User2314", agresividad: 0.5, incrementoMax: 20 },
-  { nombre: "User000", agresividad: 0.5, incrementoMax: 20 },
-  { nombre: "User9875", agresividad: 0.5, incrementoMax: 20 },
+  { nombre: "User2314", agresividad: 0.2, incrementoMax: 20 },
+  { nombre: "User000", agresividad: 0.2, incrementoMax: 20 },
+  { nombre: "User9875", agresividad: 0.2, incrementoMax: 20 },
 ];
 
 /**
@@ -22,6 +22,7 @@ export default function useBotLogic(setSubastas) {
       setSubastas((subastasActuales) =>
         subastasActuales.map((s) => {
           if (s.tiempo <= 0) return s; // No pujar si la subasta terminó
+          if (s.tiempo <= 5) return s; // no pujar en los últimos segundos?
 
           const bot = bots[Math.floor(Math.random() * bots.length)];
           const probabilidad = Math.random();
