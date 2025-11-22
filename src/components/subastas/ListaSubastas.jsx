@@ -1,78 +1,67 @@
 import React from "react";
 
-// Este componente no necesita importar ModalReclamar, TablaGanadores, ni a sí mismo.
-// Solo recibe props y renderiza JSX.
-
 export default function ListaSubastas({ subastas, onPujar }) {
   return (
     <div className="row">
-      {subastas.map((subasta) => (
-        <div className="col-md-4 mb-4" key={subasta.id}>
-          <div className="card shadow-sm border-0">
-            <img
-              src={subasta.imagen}
-              alt={subasta.nombre}
-              className="card-img-top"
-              style={{ height: "220px", objectFit: "cover" }}
-            />
-            <div className="card-body text-center">
-              <h5>{subasta.nombre}</h5>
-              <p className="mb-1">
-                Precio actual: <strong>${subasta.precio}</strong>
-              </p>
+      {subastas.map((s) => {
+        const finalizada = s.ganada || s.tiempo <= 0;
 
-              <div className="progress my-2" style={{ height: "8px" }}>
-                <div
-                  className="progress-bar bg-success"
-                  role="progressbar"
-                  style={{
-                    width: `${
-                      subasta.tiempo > 0 ? (subasta.tiempo / 60) * 100 : 0
-                    }%`,
-                  }}
-                ></div>
-              </div>
-              <small className="text-muted d-block mb-1">
-                ⏳ {subasta.tiempo}s restantes
-              </small>
+        return (
+          <div key={s.id} className="col-md-4 mb-4">
+            <div className="card shadow-sm">
+              <img
+                src={s.imagen}
+                alt={s.nombre}
+                className="card-img-top"
+                style={{ height: "200px", objectFit: "cover" }}
+              />
 
-              <div className="mb-2">
-                {subasta.ganador === "usuario" ? (
-                  <span className="badge bg-success">🏆 Vas ganando</span>
-                ) : subasta.ganador ? (
-                  <span className="badge bg-warning text-dark">
-                    👤 {subasta.ganador} va ganando
-                  </span>
+              <div className="card-body">
+                <h5 className="card-title">{s.nombre}</h5>
+
+                {/* Precio */}
+                <p className="card-text">
+                  <strong>💰 Precio actual:</strong> ${s.precio}
+                </p>
+
+                {/* Tiempo */}
+                {!finalizada ? (
+                  <p className="text-primary">
+                    🕒 Tiempo restante: <strong>{s.tiempo}s</strong>
+                  </p>
                 ) : (
-                  <span className="badge bg-secondary">Sin pujas aún</span>
+                  <p className="text-danger">
+                    ⛔ Subasta finalizada
+                  </p>
+                )}
+
+                {/* Ganador actual */}
+                {s.ganador ? (
+                  <p>
+                    🏅 <strong>Ganador actual:</strong> {s.ganador}
+                  </p>
+                ) : (
+                  <p className="text-muted">Sin pujas aún</p>
+                )}
+
+                {/* Botón pujar */}
+                {!finalizada ? (
+                  <button
+                    className="btn btn-success w-100"
+                    onClick={() => onPujar(s)}
+                  >
+                    Pujar +10
+                  </button>
+                ) : (
+                  <button className="btn btn-secondary w-100" disabled>
+                    {s.ganador ? `Ganada por ${s.ganador}` : "Sin ganador"}
+                  </button>
                 )}
               </div>
-
-              <button
-                className="btn btn-primary w-100 mt-1"
-                onClick={() => onPujar(subasta)}
-                disabled={subasta.tiempo <= 0}
-              >
-                {subasta.tiempo > 0 ? "Pujar" : "Finalizada"}
-              </button>
-
-              {subasta.tiempo <= 0 && subasta.ganador && (
-                <div
-                  className={`alert ${
-                    subasta.ganador === "usuario"
-                      ? "alert-success"
-                      : "alert-warning"
-                  } mt-2 py-1`}
-                >
-                  🏁 Ganador final:{" "}
-                  {subasta.ganador === "usuario" ? "Tú" : subasta.ganador}
-                </div>
-              )}
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
-

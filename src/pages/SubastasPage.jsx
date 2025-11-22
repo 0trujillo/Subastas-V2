@@ -1,13 +1,15 @@
+
+// ===== SubastasPage.jsx =====
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalReclamar from "../components/subastas/ModalReclamar";
 import TablaGanadores from "../components/subastas/TablaGanadores";
 import ListaSubastas from "../components/subastas/ListaSubastas";
-import useBotLogic from "../hooks/useBotLogic";
-import PanelCuenta from "../components/subastas/PanelCuenta"; // <-- Ya lo tienes importado, ¡genial!
-
-import "bootstrap/dist/css/bootstrap.min.css";
-import "font-awesome/css/font-awesome.min.css";
+import PanelCuenta from "../components/subastas/PanelCuenta";
+import {
+  obtenerSubastas,
+  pujar as pujarAPI,
+} from "../api/SubastaAPI";
 import confetti from "canvas-confetti";
 
 export default function SubastasPage() {
@@ -17,13 +19,23 @@ export default function SubastasPage() {
   const [productoGanado, setProductoGanado] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [ganadores, setGanadores] = useState([]);
-  // const [panelVisible, setPanelVisible] = useState(false); // <-- 1. ELIMINAMOS ESTE ESTADO
+
   const presupuestoMaximo = 100000;
 
-  useBotLogic(setSubastas);
+  // 🔥 TEMPORIZADOR LOCAL (actualiza la vista cada segundo)
+useEffect(() => {
+  const interval = setInterval(() => {
+    setSubastas(prev =>
+      prev.map(s =>
+        s.tiempo > 0 ? { ...s, tiempo: s.tiempo - 1 } : s
+      )
+    );
+  }, 1000);
 
-  // ... (useEffect de Inicialización y Temporizador se mantienen igual) ...
-  // 🧩 Inicialización
+  return () => clearInterval(interval);
+}, []);
+
+
   useEffect(() => {
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
     if (!usuario) {
@@ -34,110 +46,46 @@ export default function SubastasPage() {
 
     setPresupuesto(usuario.presupuesto || 5000);
 
-    const lista = [
-      { id: 1, nombre: "Laptop Gamer", precio: 100, tiempo: 60, imagen: "Imagenes/Lgamer.jpg" },
-      { id: 2, nombre: "Smartphone", precio: 250, tiempo: 70, imagen: "Imagenes/cel.webp" },
-      { id: 3, nombre: "Auriculares", precio: 75, tiempo: 50, imagen: "Imagenes/auri.jpg" },
-      { id: 4, nombre: "Carta Pokémon", precio: 1000, tiempo: 80, imagen: "Imagenes/ctpokemon.jpg" },
-      { id: 5, nombre: "PlayStation 5", precio: 500, tiempo: 65, imagen: "Imagenes/play5.jpg" },
-      { id: 6, nombre: "Bicicleta", precio: 300, tiempo: 75, imagen: "Imagenes/bici.webp" },
-    ];
-    setSubastas(lista);
+    obtenerSubastas()
+      .then((res) => setSubastas(res.data))
+      .catch(console.error);
 
     const ganadoresGuardados = JSON.parse(localStorage.getItem("ganadores")) || [];
     setGanadores(ganadoresGuardados);
   }, [navigate]);
 
-  // 🕒 Temporizador
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSubastas((prevSubastas) =>
-        prevSubastas.map((s) => {
-          if (s.tiempo > 1) return { ...s, tiempo: s.tiempo - 1 };
+  const pujar = async (subasta) => {
+    const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+    if (!usuario) return alert("Debes iniciar sesión");
 
-          if (s.tiempo === 1 && s.ganador && !s.ganadorGuardado) {
-            const nuevoGanador = {
-              nombre: s.nombre,
-              usuario: s.ganador === "usuario" ? "Tú" : s.ganador,
-              precio: s.precio,
-              fecha: new Date().toISOString(),
-            };
+    if (presupuesto < 10) return alert("⚠️ No tienes suficiente presupuesto.");
 
-            setGanadores((prevG) => {
-              const yaExiste = prevG.some(
-                (g) => g.nombre === nuevoGanador.nombre && g.precio === nuevoGanador.precio
-              );
-              if (yaExiste) return prevG;
+    try {
+      const res = await pujarAPI(subasta.id, {
+        usuario: usuario.nombre,
+        incremento: 10,
+      });
 
-              const actualizados = [...prevG, nuevoGanador];
-              localStorage.setItem("ganadores", JSON.stringify(actualizados));
-              return actualizados;
-            });
+      const actualizada = res.data;
 
-            const historial = JSON.parse(localStorage.getItem("historialPujas")) || [];
-            const nuevaEntrada = {
-              id: s.id,
-              nombre: s.nombre,
-              precio: s.precio,
-              fecha: new Date().toISOString(),
-              ganador: s.ganador,
-              reclamado: false,
-            };
-            if (!historial.some((p) => p.id === s.id)) {
-              historial.push(nuevaEntrada);
-              localStorage.setItem("historialPujas", JSON.stringify(historial));
-            }
+      setSubastas((prev) => prev.map((s) => (s.id === actualizada.id ? actualizada : s)));
+      setPresupuesto((p) => p - 10);
 
-            if (s.ganador === "usuario") {
-              lanzarConfeti();
-              const finalizada = { ...s, tiempo: 0, ganadorGuardado: true };
-              setProductoGanado(finalizada);
-              setModalVisible(true);
-              return finalizada;
-            }
-
-            return { ...s, tiempo: 0, ganadorGuardado: true };
-          }
-
-          if (s.tiempo === 1 && !s.ganador) {
-            return { ...s, tiempo: 0, ganadorGuardado: true };
-          }
-
-          return s;
-        })
-      );
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-
-  // ... (pujar, lanzarConfeti, reclamarSubasta se mantienen igual) ...
-  // 👨‍💻 Pujar manually
-  const pujar = (subasta) => {
-    if (presupuesto < 10) {
-      alert("⚠️ No tienes suficiente presupuesto.");
-      return;
+      if (actualizada.ganada && actualizada.ganador === usuario.nombre) {
+        lanzarConfeti();
+        setProductoGanado(actualizada);
+        setModalVisible(true);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error al pujar");
     }
-
-    setSubastas((prev) =>
-      prev.map((s) => {
-        if (s.id === subasta.id && s.tiempo > 0) {
-          return { ...s, precio: s.precio + 10, ganador: "usuario" };
-        }
-        return s;
-      })
-    );
-
-    setPresupuesto((p) => p - 10);
   };
 
-  // 🎉 Confeti
   const lanzarConfeti = () => {
     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
   };
 
-  // 🏅 Reclamar subasta ganada
   const reclamarSubasta = () => {
     if (!productoGanado) return;
 
@@ -153,12 +101,11 @@ export default function SubastasPage() {
     const productosGanados = JSON.parse(localStorage.getItem("productosGanados")) || [];
     localStorage.setItem("productosGanados", JSON.stringify([...productosGanados, producto]));
 
-    alert("✅ Producto reclamado exitosamente. Redirigiendo a Envíos...");
+    alert("Producto reclamado. Redirigiendo...");
     setModalVisible(false);
     setTimeout(() => navigate("/envios"), 800);
   };
 
-  // 💸 Recargar presupuesto (Esta función se queda aquí)
   const recargar = (monto) => {
     setPresupuesto((p) => {
       if (p + monto > presupuestoMaximo) {
@@ -169,13 +116,11 @@ export default function SubastasPage() {
     });
   };
 
-  // Esta función se queda aquí
   const formatearDinero = (monto) =>
     monto.toLocaleString("es-CL", { style: "currency", currency: "CLP" });
 
   return (
     <>
-      {/* 2. AÑADIMOS EL NUEVO COMPONENTE Y LE PASAMOS PROPS */}
       <PanelCuenta
         presupuesto={presupuesto}
         formatearDinero={formatearDinero}
@@ -184,38 +129,26 @@ export default function SubastasPage() {
       />
 
       <main className="container mt-5 position-relative">
-        
-        {/* 3. ELIMINAMOS EL BOTÓN FLOTANTE Y EL PANEL LATERAL DE AQUÍ */}
-
-        {/* 🏅 Banner de ganador */}
         {ganadores.length > 0 && (
           <div className="alert alert-success text-center shadow-sm mt-3">
-            🏅 Último ganador:{" "}
-            <strong>{ganadores[ganadores.length - 1].usuario}</strong> ganó{" "}
-            <strong>{ganadores[ganadores.length - 1].nombre}</strong> por{" "}
-            <strong>${ganadores[ganadores.length - 1].precio}</strong>
+            🏅 Último ganador: <strong>{ganadores[ganadores.length - 1].usuario}</strong> ganó
+            <strong> {ganadores[ganadores.length - 1].nombre}</strong> por
+            <strong> ${ganadores[ganadores.length - 1].precio}</strong>
           </div>
         )}
 
-        {/* 💰 Presupuesto */}
         <div className="text-end mb-3">
           <span className="badge bg-success fs-6">
             💰 Presupuesto: {formatearDinero(presupuesto)}
           </span>
         </div>
 
-        <h2 className="text-center mb-4 fw-bold text-primary">
-          🔥 Subastas Activas
-        </h2>
+        <h2 className="text-center mb-4 fw-bold text-primary">🔥 Subastas Activas</h2>
 
-        {/* 🧩 Lista de subastas */}
         <ListaSubastas subastas={subastas} onPujar={pujar} />
-
-        {/* 🏆 Tabla de ganadores */}
         <TablaGanadores ganadores={ganadores} />
       </main>
 
-      {/* 🪄 Modal de reclamo */}
       {modalVisible && (
         <ModalReclamar
           producto={productoGanado}
@@ -226,4 +159,5 @@ export default function SubastasPage() {
     </>
   );
 }
+
 
