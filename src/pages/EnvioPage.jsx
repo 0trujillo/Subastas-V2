@@ -3,6 +3,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductoEnvioCard from "../components/envios/ProductoEnvioCard";
 import ModalEnvio from "../components/envios/ModalEnvio";
+
+import {
+  obtenerEnvios,
+  configurarEnvio,
+  marcarEntregado,
+} from "../api/EnviosAPI";
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 
@@ -12,54 +19,77 @@ export default function EnvioPage() {
   const [direccion, setDireccion] = useState("");
   const [modalProducto, setModalProducto] = useState(null);
 
+  const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+
+  // 🔥 Cargar envíos reales desde el backend
   useEffect(() => {
-    const lista = JSON.parse(localStorage.getItem("productosGanados")) || [];
-    setProductos(lista);
-  }, []);
-
-  const configurarEnvio = (producto) => {
-    if (!direccion.trim()) return alert("⚠️ Ingresa una dirección de envío.");
-
-    const actualizados = productos.map((p) =>
-      p.id === producto.id
-        ? { ...p, direccion, estado: "ENVIADO", fechaEnvio: new Date().toISOString() }
-        : p
-    );
-
-    setProductos(actualizados);
-    localStorage.setItem("productosGanados", JSON.stringify(actualizados));
-    alert("🚚 Envío configurado correctamente.");
-    setDireccion("");
-    setModalProducto(null);
-  };
-
-  const entregarProducto = (producto) => {
-    const actualizados = productos.map((p) =>
-      p.id === producto.id ? { ...p, estado: "ENTREGADO" } : p
-    );
-    setProductos(actualizados);
-    localStorage.setItem("productosGanados", JSON.stringify(actualizados));
-    alert("📦 Producto entregado con éxito.");
-  };
-
-  const limpiarHistorial = () => {
-    if (window.confirm("¿Seguro que deseas borrar el historial de envíos?")) {
-      localStorage.removeItem("productosGanados");
-      setProductos([]);
+    if (!usuario) {
+      navigate("/");
+      return;
     }
+
+    obtenerEnvios(usuario.nombre)
+      .then((res) => setProductos(res.data))
+      .catch((err) => console.error("Error cargando envíos:", err));
+  }, [navigate]);
+
+  // ================================
+  // 1️⃣ Configurar Envío
+  // ================================
+  const guardarConfiguracionEnvio = async (producto, datos) => {
+    try {
+      await configurarEnvio(producto.id, {
+        nombreCompleto: datos.nombre,
+        telefono: datos.telefono,
+        direccion: datos.direccion,
+        ciudad: datos.ciudad,
+        region: datos.region,
+      });
+
+      alert("🚚 Envío configurado correctamente.");
+
+      // Recargar lista
+      const res = await obtenerEnvios(usuario.nombre);
+      setProductos(res.data);
+
+      setModalProducto(null);
+      setDireccion("");
+    } catch (err) {
+      console.error(err);
+      alert("Error al configurar envío");
+    }
+  };
+
+  // ================================
+  // 2️⃣ Marcar como entregado
+  // ================================
+  const entregarProducto = async (producto) => {
+    try {
+      await marcarEntregado(producto.id);
+
+      alert("📦 Producto marcado como ENTREGADO");
+
+      const res = await obtenerEnvios(usuario.nombre);
+      setProductos(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Error al entregar producto");
+    }
+  };
+
+  // ================================
+  // 3️⃣ Limpiar historial (solo si quieres)
+  // ================================
+  const limpiarHistorial = async () => {
+    alert("⚠️ Como ahora se usan datos reales del backend, no puedes borrar el historial desde aquí.");
   };
 
   return (
     <>
-    
-
       <main className="container mt-5">
         <div className="d-flex justify-content-between mb-3">
           <button className="btn btn-outline-primary" onClick={() => navigate("/subastas")}>
             <i className="fas fa-arrow-left me-2"></i>Volver a Subastas
-          </button>
-          <button className="btn btn-outline-danger" onClick={limpiarHistorial}>
-            <i className="fas fa-trash me-2"></i>Limpiar historial
           </button>
         </div>
 
@@ -79,7 +109,7 @@ export default function EnvioPage() {
                 <ProductoEnvioCard
                   producto={producto}
                   onConfigurarEnvio={setModalProducto}
-                  onEntregarProducto={entregarProducto}
+                  onEntregarProducto={() => entregarProducto(producto)}
                 />
               </div>
             ))}
@@ -87,17 +117,16 @@ export default function EnvioPage() {
         )}
       </main>
 
+      {/* Modal de configuración */}
       {modalProducto && (
         <ModalEnvio
           producto={modalProducto}
           direccion={direccion}
           onDireccionChange={(e) => setDireccion(e.target.value)}
           onCancelar={() => setModalProducto(null)}
-          onGuardar={() => configurarEnvio(modalProducto)}
+          onGuardar={(data) => guardarConfiguracionEnvio(modalProducto, data)}
         />
       )}
-
-    
     </>
   );
 }

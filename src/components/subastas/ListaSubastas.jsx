@@ -1,10 +1,11 @@
 import React from "react";
 
-export default function ListaSubastas({ subastas, onPujar }) {
+export default function ListaSubastas({ subastas, onPujar, onReclamar, usuarioActual }) {
   return (
     <div className="row">
       {subastas.map((s) => {
         const finalizada = s.ganada || s.tiempo <= 0;
+        const esGanador = usuarioActual && s.ganada && s.ganador === usuarioActual.nombre;
 
         return (
           <div key={s.id} className="col-md-4 mb-4">
@@ -30,9 +31,7 @@ export default function ListaSubastas({ subastas, onPujar }) {
                     🕒 Tiempo restante: <strong>{s.tiempo}s</strong>
                   </p>
                 ) : (
-                  <p className="text-danger">
-                    ⛔ Subasta finalizada
-                  </p>
+                  <p className="text-danger">⛔ Subasta finalizada</p>
                 )}
 
                 {/* Ganador actual */}
@@ -44,16 +43,25 @@ export default function ListaSubastas({ subastas, onPujar }) {
                   <p className="text-muted">Sin pujas aún</p>
                 )}
 
-                {/* Botón pujar */}
-                {!finalizada ? (
+                {/* ============================
+                    BOTÓN RECLAMAR ENVÍO
+                ============================ */}
+                {esGanador && (
                   <button
-                    className="btn btn-success w-100"
-                    onClick={() => onPujar(s)}
+                    className="btn btn-outline-success btn-sm mt-2 w-100"
+                    onClick={() => onReclamar(s)}
                   >
+                    📦 Reclamar Envío
+                  </button>
+                )}
+
+                {/* Botón Pujar */}
+                {!finalizada ? (
+                  <button className="btn btn-success w-100 mt-2" onClick={() => onPujar(s)}>
                     Pujar +10
                   </button>
                 ) : (
-                  <button className="btn btn-secondary w-100" disabled>
+                  <button className="btn btn-secondary w-100 mt-2" disabled>
                     {s.ganador ? `Ganada por ${s.ganador}` : "Sin ganador"}
                   </button>
                 )}
