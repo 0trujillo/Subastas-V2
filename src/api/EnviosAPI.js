@@ -1,10 +1,31 @@
+// ===== EnviosAPI.js =====
 import axios from "axios";
 
 const API = axios.create({
   baseURL: "http://localhost:8080/api/envios",
 });
 
+// Crear envío manual (no se usa para reclamar)
 export const crearEnvio = (data) => API.post("/", data);
+
+// Obtener envíos de un usuario
 export const obtenerEnvios = (usuario) => API.get(`/${usuario}`);
-export const configurarEnvio = (id, datos) => API.put(`/${id}/configurar`, datos);
+
+// Configurar la dirección y datos del envío
+export const configurarEnvio = (id, datos) =>
+  API.put(`/${id}/configurar`, datos);
+
+// Marcar como entregado
 export const marcarEntregado = (id) => API.put(`/${id}/entregar`);
+
+// ============================
+// ⭐ FUNCIONALIDAD QUE FALTABA
+// Reclamar subasta → crea envío automáticamente
+// ============================
+export const reclamarEnvio = (subastaId, usuario) =>
+  API.post(`/reclamar/${subastaId}?usuario=${usuario}`);
+
+export const descartarEnvio = (idProducto) => {
+  return axios.delete(`/api/envios/${idProducto}/descartar`);
+};
+

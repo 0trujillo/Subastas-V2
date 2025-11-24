@@ -8,6 +8,7 @@ import {
   obtenerEnvios,
   configurarEnvio,
   marcarEntregado,
+  descartarEnvio,  // ✨ IMPORTANTE
 } from "../api/EnviosAPI";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -48,7 +49,6 @@ export default function EnvioPage() {
 
       alert("🚚 Envío configurado correctamente.");
 
-      // Recargar lista
       const res = await obtenerEnvios(usuario.nombre);
       setProductos(res.data);
 
@@ -78,18 +78,36 @@ export default function EnvioPage() {
   };
 
   // ================================
-  // 3️⃣ Limpiar historial (solo si quieres)
+  // 3️⃣ Descartar envío (NUEVO)
   // ================================
-  const limpiarHistorial = async () => {
-    alert("⚠️ Como ahora se usan datos reales del backend, no puedes borrar el historial desde aquí.");
+  const descartarProducto = async (producto) => {
+  if (!window.confirm("¿Seguro que quieres descartar este envío?")) return;
+
+  try {
+    await descartarEnvio(producto.id);  // 👈 USANDO EL ID REAL DEL ENVÍO
+
+    alert("🗑️ Envío descartado correctamente.");
+
+    const res = await obtenerEnvios(usuario.nombre);
+    setProductos(res.data);
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al descartar envío");
+  }
   };
+
 
   return (
     <>
       <main className="container mt-5">
         <div className="d-flex justify-content-between mb-3">
-          <button className="btn btn-outline-primary" onClick={() => navigate("/subastas")}>
-            <i className="fas fa-arrow-left me-2"></i>Volver a Subastas
+          <button
+            className="btn btn-outline-primary"
+            onClick={() => navigate("/subastas")}
+          >
+            <i className="fas fa-arrow-left me-2"></i>
+            Volver a Subastas
           </button>
         </div>
 
@@ -98,7 +116,10 @@ export default function EnvioPage() {
             <i className="fas fa-box-open fa-3x text-muted mb-3"></i>
             <h5>No hay productos ganados aún.</h5>
             <p>Participa en una subasta para ganar premios.</p>
-            <button className="btn btn-primary mt-2" onClick={() => navigate("/subastas")}>
+            <button
+              className="btn btn-primary mt-2"
+              onClick={() => navigate("/subastas")}
+            >
               Ir a Subastas
             </button>
           </div>
@@ -110,6 +131,7 @@ export default function EnvioPage() {
                   producto={producto}
                   onConfigurarEnvio={setModalProducto}
                   onEntregarProducto={() => entregarProducto(producto)}
+                  onDescartarProducto={() => descartarProducto(producto)} // 👈 NUEVO
                 />
               </div>
             ))}

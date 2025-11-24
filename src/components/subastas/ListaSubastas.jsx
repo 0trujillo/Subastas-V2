@@ -46,14 +46,22 @@ export default function ListaSubastas({ subastas, onPujar, onReclamar, usuarioAc
                 {/* ============================
                     BOTÓN RECLAMAR ENVÍO
                 ============================ */}
+                {/* BOTÓN RECLAMAR */}
                 {esGanador && (
-                  <button
-                    className="btn btn-outline-success btn-sm mt-2 w-100"
-                    onClick={() => onReclamar(s)}
-                  >
-                    📦 Reclamar Envío
-                  </button>
+                  s.estado === "RECLAMADA" ? (
+                    <button className="btn btn-secondary btn-sm mt-2 w-100" disabled>
+                      ✔ Ya reclamado
+                    </button>
+                  ) : (
+                    <button
+                      className="btn btn-outline-success btn-sm mt-2 w-100"
+                      onClick={() => onReclamar(s)}
+                    >
+                      📦 Reclamar Envío
+                    </button>
+                  )
                 )}
+
 
                 {/* Botón Pujar */}
                 {!finalizada ? (

@@ -1,4 +1,6 @@
 import React from "react";
+import "../../index.css";
+
 
 export default function ModalReclamar({ producto, onCerrar, onReclamar }) {
 
@@ -31,9 +33,25 @@ export default function ModalReclamar({ producto, onCerrar, onReclamar }) {
             Cancelar
           </button>
 
-          <button className="btn btn-success" onClick={onReclamar}>
-            Confirmar Reclamo
-          </button>
+          {producto.estado !== "RECLAMADA" ? (
+            <button className="btn btn-success" onClick={onReclamar}>
+              Confirmar Reclamo
+            </button>
+          ) : (
+            <button className="btn btn-secondary" disabled>
+              Ya reclamado
+            </button>
+          )}
+          {producto.estado !== "RECLAMADA" ? (
+            <button className="btn btn-success" onClick={onReclamar}>
+              Confirmar Reclamo
+            </button>
+          ) : (
+            <button className="btn btn-secondary" disabled>
+              Ya reclamado
+            </button>
+          )}
+
         </div>
 
       </div>

@@ -1,10 +1,10 @@
-// src/components/envios/ProductoEnvioCard.jsx
 import React from "react";
 
 export default function ProductoEnvioCard({
   producto,
   onConfigurarEnvio,
   onEntregarProducto,
+  onDescartarProducto,
 }) {
   const formatearDinero = (monto) =>
     monto.toLocaleString("es-CL", { style: "currency", currency: "CLP" });
@@ -17,11 +17,13 @@ export default function ProductoEnvioCard({
         className="card-img-top"
         style={{ height: "220px", objectFit: "cover" }}
       />
+
       <div className="card-body text-center">
         <h5>{producto.nombre}</h5>
         <p className="text-muted mb-1">
           Precio ganado: <strong>{formatearDinero(producto.precio)}</strong>
         </p>
+
         <p>
           Estado:{" "}
           <span
@@ -54,6 +56,13 @@ export default function ProductoEnvioCard({
             Confirmar Entrega
           </button>
         )}
+
+        <button
+          className="btn btn-outline-danger btn-sm mt-2"
+          onClick={() => onDescartarProducto(producto)}
+        >
+          Descartar Envío
+        </button>
       </div>
     </div>
   );

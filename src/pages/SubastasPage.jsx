@@ -1,11 +1,11 @@
 // ===== SubastasPage.jsx =====
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { reclamarEnvio } from "../api/EnviosAPI";
 import ModalReclamar from "../components/subastas/ModalReclamar";
 import TablaGanadores from "../components/subastas/TablaGanadores";
 import ListaSubastas from "../components/subastas/ListaSubastas";
 import PanelCuenta from "../components/subastas/PanelCuenta";
-import { crearEnvio } from "../api/EnviosAPI";
 import {
   obtenerSubastas,
   pujar as pujarAPI,
@@ -107,30 +107,24 @@ export default function SubastasPage() {
   // ==========================
   // RECLAMAR SUBASTA
   // ==========================
-  const reclamarSubasta = async () => {
-    if (!productoGanado) return;
-
+      const reclamarSubasta = async () => {
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
 
     try {
-      await crearEnvio({
-        subastaId: productoGanado.id,
-        usuario: usuario.nombre,
-        nombreProducto: productoGanado.nombre,
-        imagen: productoGanado.imagen,
-        precio: productoGanado.precio,
-        estado: "PENDIENTE_ENVIO",
-      });
+      await reclamarEnvio(productoGanado.id, usuario.nombre);
 
-      alert("Producto reclamado. Redirigiendo...");
+      alert("✨ Reclamo realizado. Ahora configura tu envío.");
+
       setModalVisible(false);
       navigate("/envios");
 
-    } catch (err) {
-      console.error(err);
-      alert("Error al registrar envío");
+    } catch (error) {
+      console.error(error);
+      alert("No fue posible reclamar la subasta.");
     }
   };
+
+
 
   // ==========================
   // RECARGAR
@@ -181,9 +175,13 @@ export default function SubastasPage() {
         <ListaSubastas
           subastas={subastas}
           onPujar={pujar}
-          onReclamar={() => setModalVisible(true)}
+          onReclamar={(subasta) => {
+            setProductoGanado(subasta);
+            setModalVisible(true);
+          }}
           usuarioActual={usuarioActual}
         />
+
 
         <TablaGanadores ganadores={ganadores} />
       </main>
