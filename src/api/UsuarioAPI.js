@@ -1,5 +1,14 @@
-import API from "./API";
+import axios from "axios";
 
-export const obtenerUsuario = (nombre) => API.get(`/usuario/${nombre}`);
+const UsuarioAPI = axios.create({
+  baseURL: "http://localhost:8080/api",
+});
+
+const token = localStorage.getItem("token");
+if (token) UsuarioAPI.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+export const obtenerUsuario = (nombre) =>
+  UsuarioAPI.get(`/usuario/${nombre}`);
+
 export const recargarPresupuesto = (nombre, monto) =>
-  API.post(`/usuario/recargar?nombre=${nombre}&monto=${monto}`);
+  UsuarioAPI.post(`/usuario/recargar?nombre=${nombre}&monto=${monto}`);
