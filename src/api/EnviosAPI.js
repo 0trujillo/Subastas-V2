@@ -1,9 +1,5 @@
 // ===== EnviosAPI.js =====
-import axios from "axios";
-
-const API = axios.create({
-  baseURL: "http://localhost:8080/api/envios",
-});
+import API from "./API";
 
 // Crear envío manual (no se usa para reclamar)
 export const crearEnvio = (data) => API.post("/", data);

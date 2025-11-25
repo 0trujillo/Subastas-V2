@@ -1,10 +1,4 @@
-// ===== SubastaAPI.js =====
-import axios from "axios";
-
-
-const API = axios.create({
-baseURL: "http://localhost:8080/api",
-});
+import API from "./API";
 
 
 export const obtenerSubastas = () => API.get("/subastas");
