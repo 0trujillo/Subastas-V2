@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 
+import HistorialEnviosPage from "./pages/HistorialEnviosPage";
+
 import SubastasPage from "./pages/SubastasPage";
 import EnvioPage from "./pages/EnvioPage";
 import LoginPage from "./pages/LoginPage";
@@ -22,6 +24,7 @@ const AppLayout = () => {
       {mostrarNavbar && <Navbar />}
 
       <Routes>
+        <Route path="/envios/historial" element={<HistorialEnviosPage />} />
         <Route path="/" element={<LoginPage />} />
         <Route path="/mis-pujas" element={<MisPujasPage />} />
         <Route path="/subastas" element={<SubastasPage />} />

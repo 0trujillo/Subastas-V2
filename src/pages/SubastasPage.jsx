@@ -20,8 +20,32 @@ export default function SubastasPage() {
   const [productoGanado, setProductoGanado] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [ganadores, setGanadores] = useState([]);
+  const [cargandoReclamo, setCargandoReclamo] = useState(false);
 
   const presupuestoMaximo = 100000;
+
+  // ==========================
+  // RECLAMAR SUBASTA
+  // ==========================
+  const reclamarSubasta = async () => {
+    const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+
+    try {
+      setCargandoReclamo(true); 
+
+      await reclamarEnvio(productoGanado.id, usuario.nombre);
+
+      alert("✨ Reclamo realizado. Ahora configura tu envío.");
+      setModalVisible(false);
+      navigate("/envios");
+
+    } catch (error) {
+      console.error(error);
+      alert("No fue posible reclamar la subasta.");
+    } finally {
+      setCargandoReclamo(false);
+    }
+  };
 
   // ==========================
   // TEMPORIZADOR LOCAL
@@ -105,28 +129,6 @@ export default function SubastasPage() {
   };
 
   // ==========================
-  // RECLAMAR SUBASTA
-  // ==========================
-      const reclamarSubasta = async () => {
-    const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
-
-    try {
-      await reclamarEnvio(productoGanado.id, usuario.nombre);
-
-      alert("✨ Reclamo realizado. Ahora configura tu envío.");
-
-      setModalVisible(false);
-      navigate("/envios");
-
-    } catch (error) {
-      console.error(error);
-      alert("No fue posible reclamar la subasta.");
-    }
-  };
-
-
-
-  // ==========================
   // RECARGAR
   // ==========================
   const recargar = (monto) => {
@@ -141,7 +143,6 @@ export default function SubastasPage() {
 
   const formatearDinero = (monto) =>
     monto.toLocaleString("es-CL", { style: "currency", currency: "CLP" });
-
 
   const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
 
@@ -182,7 +183,6 @@ export default function SubastasPage() {
           usuarioActual={usuarioActual}
         />
 
-
         <TablaGanadores ganadores={ganadores} />
       </main>
 
@@ -191,6 +191,7 @@ export default function SubastasPage() {
           producto={productoGanado}
           onCerrar={() => setModalVisible(false)}
           onReclamar={reclamarSubasta}
+          loading={cargandoReclamo}
         />
       )}
     </>

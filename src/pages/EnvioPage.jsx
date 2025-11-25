@@ -109,6 +109,14 @@ export default function EnvioPage() {
             <i className="fas fa-arrow-left me-2"></i>
             Volver a Subastas
           </button>
+          <button
+            className="btn btn-outline-secondary ms-2"
+            onClick={() => navigate("/envios/historial")}
+          >
+            <i className="fas fa-history me-2"></i>
+            Ver Historial
+          </button>
+
         </div>
 
         {productos.length === 0 ? (

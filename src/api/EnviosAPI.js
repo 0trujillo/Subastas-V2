@@ -25,7 +25,9 @@ export const marcarEntregado = (id) => API.put(`/${id}/entregar`);
 export const reclamarEnvio = (subastaId, usuario) =>
   API.post(`/reclamar/${subastaId}?usuario=${usuario}`);
 
-export const descartarEnvio = (idProducto) => {
-  return axios.delete(`/api/envios/${idProducto}/descartar`);
-};
+export const descartarEnvio = (idProducto) => 
+  API.put(`/${idProducto}/descartar`);
+
+export const obtenerHistorial = (usuario) =>
+  API.get(`/historial/${usuario}`);
 
