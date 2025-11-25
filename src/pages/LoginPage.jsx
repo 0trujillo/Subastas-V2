@@ -2,16 +2,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login, register } from "../api/AuthAPI";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-const LoginPage = () => {
+export default function LoginPage() {
   const navigate = useNavigate();
   const [modo, setModo] = useState("login");
 
   const [form, setForm] = useState({
-    nombre: "",      // <--- Username real
-    correo: "",      // (Opcional, si lo quieres)
+    nombre: "",
     contraseña: "",
-    confirmar: "",
+    confirmar: ""
   });
 
   const [notificacion, setNotificacion] = useState({ mensaje: "", tipo: "" });
@@ -21,19 +21,18 @@ const LoginPage = () => {
     setTimeout(() => setNotificacion({ mensaje: "", tipo: "" }), 2500);
   };
 
-  const cambiarFormulario = (e) => {
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // ------------------------- LOGIN ---------------------------------
+  // --------------------------- LOGIN ----------------------------
   const ingresarUsuario = async (e) => {
     e.preventDefault();
 
     try {
-      // ⬇⬇ SE ENVÍA EXACTAMENTE LO QUE EL BACKEND PIDE ⬇⬇
       const res = await login({
-        nombre: form.nombre,        // <--- corregido
-        password: form.contraseña,  // <--- correcto
+        nombre: form.nombre,         // ← el backend usa "nombre"
+        password: form.contraseña,   // ← y password
       });
 
       localStorage.setItem("token", res.data.token);
@@ -53,7 +52,7 @@ const LoginPage = () => {
     }
   };
 
-  // ---------------------- REGISTRO ---------------------------------
+  // --------------------------- REGISTRO ----------------------------
   const registrarUsuario = async (e) => {
     e.preventDefault();
 
@@ -62,7 +61,6 @@ const LoginPage = () => {
     }
 
     try {
-      // ⬇⬇ Backend SOLO usa nombre + password ⬇⬇
       await register({
         nombre: form.nombre,
         password: form.contraseña,
@@ -76,85 +74,171 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="login-container">
-      <h1>{modo === "login" ? "Iniciar Sesión" : "Registrarse"}</h1>
+    <div>
+      {/* ---------------------------- HEADER ---------------------------- */}
+      <header className="bg-primary text-white py-3 text-center">
+        <h1>
+          <i className="fa-solid fa-gavel me-2"></i>Subastas Online
+        </h1>
+        <p>El mejor sitio de subastas online</p>
+      </header>
 
-      {notificacion.mensaje && (
-        <div className={`alert alert-${notificacion.tipo}`}>
-          {notificacion.mensaje}
-        </div>
-      )}
+      <main className="container my-5">
+        {/* ---------------------------- LOGIN FORM ---------------------------- */}
+        {modo === "login" && (
+          <section className="row justify-content-center">
+            <div className="col-md-6">
+              <div className="card shadow">
+                <div className="card-header bg-primary text-white">
+                  <h2 className="mb-0">
+                    <i className="fa-solid fa-right-to-bracket me-2"></i>
+                    Iniciar Sesión
+                  </h2>
+                </div>
 
-      {/* ---------------------- FORMULARIO LOGIN ---------------------- */}
-      {modo === "login" && (
-        <form onSubmit={ingresarUsuario}>
-          <input
-            type="text"
-            name="nombre"
-            placeholder="Nombre de usuario"
-            value={form.nombre}
-            onChange={cambiarFormulario}
-            required
-          />
+                <div className="card-body">
+                  {notificacion.mensaje && (
+                    <div className={`alert alert-${notificacion.tipo}`}>
+                      {notificacion.mensaje}
+                    </div>
+                  )}
 
-          <input
-            type="password"
-            name="contraseña"
-            placeholder="Contraseña"
-            value={form.contraseña}
-            onChange={cambiarFormulario}
-            required
-          />
+                  <form onSubmit={ingresarUsuario}>
+                    <div className="mb-3">
+                      <label className="form-label">
+                        <i className="fa-solid fa-user me-2"></i>Nombre de usuario
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="nombre"
+                        value={form.nombre}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
 
-          <button type="submit">Entrar</button>
-        </form>
-      )}
+                    <div className="mb-3">
+                      <label className="form-label">
+                        <i className="fa-solid fa-lock me-2"></i>Contraseña
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        name="contraseña"
+                        value={form.contraseña}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
 
-      {/* ---------------------- FORMULARIO REGISTRO ------------------ */}
-      {modo === "registro" && (
-        <form onSubmit={registrarUsuario}>
-          <input
-            type="text"
-            name="nombre"
-            placeholder="Nombre de usuario"
-            value={form.nombre}
-            onChange={cambiarFormulario}
-            required
-          />
+                    <div className="d-grid">
+                      <button className="btn btn-primary btn-lg">
+                        <i className="fa-solid fa-right-to-bracket me-2"></i>Ingresar
+                      </button>
+                    </div>
+                  </form>
 
-          <input
-            type="password"
-            name="contraseña"
-            placeholder="Contraseña"
-            value={form.contraseña}
-            onChange={cambiarFormulario}
-            required
-          />
-
-          <input
-            type="password"
-            name="confirmar"
-            placeholder="Confirmar contraseña"
-            value={form.confirmar}
-            onChange={cambiarFormulario}
-            required
-          />
-
-          <button type="submit">Crear Cuenta</button>
-        </form>
-      )}
-
-      <p>
-        {modo === "login" ? (
-          <span onClick={() => setModo("registro")}>Crear una cuenta</span>
-        ) : (
-          <span onClick={() => setModo("login")}>
-            ¿Ya tienes cuenta? Inicia sesión
-          </span>
+                  <div className="text-center mt-3">
+                    <p className="text-muted mb-2">¿No tienes cuenta?</p>
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={() => setModo("registro")}
+                    >
+                      <i className="fa-solid fa-user-plus me-2"></i>
+                      Crear cuenta nueva
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         )}
-      </p>
+
+        {/* --------------------------- REGISTRO FORM --------------------------- */}
+        {modo === "registro" && (
+          <section className="row justify-content-center">
+            <div className="col-md-6">
+              <div className="card shadow">
+                <div className="card-header bg-success text-white">
+                  <h2 className="mb-0">
+                    <i className="fa-solid fa-user-plus me-2"></i>Crear Cuenta
+                  </h2>
+                </div>
+
+                <div className="card-body">
+                  {notificacion.mensaje && (
+                    <div className={`alert alert-${notificacion.tipo}`}>
+                      {notificacion.mensaje}
+                    </div>
+                  )}
+
+                  <form onSubmit={registrarUsuario}>
+                    <div className="mb-3">
+                      <label className="form-label">
+                        <i className="fa-solid fa-user me-2"></i>Nombre de usuario
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="nombre"
+                        value={form.nombre}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">
+                        <i className="fa-solid fa-lock me-2"></i>Contraseña
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        name="contraseña"
+                        value={form.contraseña}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">
+                        <i className="fa-solid fa-circle-check me-2"></i>
+                        Confirmar contraseña
+                      </label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        name="confirmar"
+                        value={form.confirmar}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="d-grid">
+                      <button className="btn btn-success btn-lg">
+                        <i className="fa-solid fa-user-plus me-2"></i>Registrarme
+                      </button>
+                    </div>
+                  </form>
+
+                  <div className="text-center mt-3">
+                    <p className="text-muted mb-2">¿Ya tienes cuenta?</p>
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={() => setModo("login")}
+                    >
+                      <i className="fa-solid fa-right-to-bracket me-2"></i>Iniciar sesión
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+      </main>
     </div>
   );
-};
-
-export default LoginPage;
+}
