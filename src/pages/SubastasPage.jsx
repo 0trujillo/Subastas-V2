@@ -11,11 +11,18 @@ import {
   pujar as pujarAPI,
   obtenerGanadores
 } from "../api/SubastaAPI";
+
+import {
+  obtenerUsuario,
+  recargarPresupuesto,
+  descontarPresupuesto,
+} from "../api/UsuarioAPI";
+
 import confetti from "canvas-confetti";
 
 export default function SubastasPage() {
   const navigate = useNavigate();
-  const [presupuesto, setPresupuesto] = useState(5000);
+  const [presupuesto, setPresupuesto] = useState(0);
   const [subastas, setSubastas] = useState([]);
   const [productoGanado, setProductoGanado] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -24,18 +31,65 @@ export default function SubastasPage() {
 
   const presupuestoMaximo = 100000;
 
+  const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
+
   // ==========================
-  // RECLAMAR SUBASTA
+  // CARGAR SUBASTAS + USUARIO (inicio)
+  // ==========================
+  useEffect(() => {
+    if (!usuarioActual) {
+      alert("Por favor inicia sesión primero");
+      navigate("/");
+      return;
+    }
+
+    // Obtener usuario REAL desde backend
+    obtenerUsuario(usuarioActual.nombre)
+      .then((res) => {
+        setPresupuesto(res.data.presupuesto);
+        localStorage.setItem("usuarioActual", JSON.stringify(res.data));
+      })
+      .catch(console.error);
+
+    obtenerSubastas()
+      .then((res) => setSubastas(res.data))
+      .catch(console.error);
+  }, [navigate]);
+
+  // ==========================
+  // SINCRONIZAR SUBASTAS CADA 1s
+  // ==========================
+  useEffect(() => {
+    const interval = setInterval(() => {
+      obtenerSubastas()
+        .then((res) => setSubastas(res.data))
+        .catch(console.error);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // ==========================
+  // GANADORES
+  // ==========================
+  useEffect(() => {
+    obtenerGanadores()
+      .then((res) => setGanadores(res.data))
+      .catch(console.error);
+  }, []);
+
+  // ==========================
+  // 🚚 RECLAMAR ENVÍO
   // ==========================
   const reclamarSubasta = async () => {
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
 
     try {
-      setCargandoReclamo(true); 
+      setCargandoReclamo(true);
 
       await reclamarEnvio(productoGanado.id, usuario.nombre);
 
-      alert("✨ Reclamo realizado. Ahora configura tu envío.");
+      alert("✨ Reclamo realizado. Configura tu envío.");
       setModalVisible(false);
       navigate("/envios");
 
@@ -46,71 +100,32 @@ export default function SubastasPage() {
       setCargandoReclamo(false);
     }
   };
+  
 
   // ==========================
-  // TEMPORIZADOR LOCAL
-  // ==========================
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSubastas(prev =>
-        prev.map(s =>
-          s.tiempo > 0 ? { ...s, tiempo: s.tiempo - 1 } : s
-        )
-      );
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // ==========================
-  // CARGA INICIAL SUBASTAS + USUARIO
-  // ==========================
-  useEffect(() => {
-    const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
-    if (!usuario) {
-      alert("Por favor inicia sesión primero");
-      navigate("/");
-      return;
-    }
-
-    setPresupuesto(usuario.presupuesto || 5000);
-
-    obtenerSubastas()
-      .then(res => setSubastas(res.data))
-      .catch(console.error);
-  }, [navigate]);
-
-  // ==========================
-  // GANADORES DEL BACKEND
-  // ==========================
-  useEffect(() => {
-    obtenerGanadores()
-      .then(res => setGanadores(res.data))
-      .catch(console.error);
-  }, []);
-
-  // ==========================
-  // PUJAR
+  // 🟡 PUJAR
   // ==========================
   const pujar = async (subasta) => {
     const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
     if (!usuario) return alert("Debes iniciar sesión");
 
-    if (presupuesto < 10) return alert("⚠️ No tienes suficiente presupuesto.");
+    if (presupuesto < 10)
+      return alert("⚠️ No tienes suficiente presupuesto.");
 
     try {
       const res = await pujarAPI(subasta.id, {
         usuario: usuario.nombre,
-        incremento: 10
+        incremento: 10,
       });
 
       const actualizada = res.data;
 
-      setSubastas(prev =>
-        prev.map(s => (s.id === actualizada.id ? actualizada : s))
+      setSubastas((prev) =>
+        prev.map((s) => (s.id === actualizada.id ? actualizada : s))
       );
 
-      setPresupuesto(p => p - 10);
+      // Descontar localmente
+      setPresupuesto((p) => p - 10);
 
       if (actualizada.ganada && actualizada.ganador === usuario.nombre) {
         lanzarConfeti();
@@ -129,22 +144,30 @@ export default function SubastasPage() {
   };
 
   // ==========================
-  // RECARGAR
+  // 💸 RECARGAR (REAL + BACKEND)
   // ==========================
-  const recargar = (monto) => {
-    setPresupuesto((p) => {
-      if (p + monto > presupuestoMaximo) {
-        alert("Límite máximo alcanzado");
-        return p;
-      }
-      return p + monto;
-    });
+  const recargar = async (monto) => {
+    if (!usuarioActual) return;
+
+    try {
+      const res = await recargarPresupuesto(usuarioActual.nombre, monto);
+
+      const usuarioActualizado = res.data;
+
+      // guardar usuario nuevo en localStorage
+      localStorage.setItem("usuarioActual", JSON.stringify(usuarioActualizado));
+
+      // actualizar presupuesto en pantalla
+      setPresupuesto(usuarioActualizado.presupuesto);
+
+    } catch (err) {
+      console.error(err);
+      alert("Error al recargar presupuesto");
+    }
   };
 
   const formatearDinero = (monto) =>
     monto.toLocaleString("es-CL", { style: "currency", currency: "CLP" });
-
-  const usuarioActual = JSON.parse(localStorage.getItem("usuarioActual"));
 
   return (
     <>
@@ -156,6 +179,7 @@ export default function SubastasPage() {
       />
 
       <main className="container mt-5 position-relative">
+
         {ganadores.length > 0 && (
           <div className="alert alert-success text-center shadow-sm mt-3">
             🏅 Último ganador:

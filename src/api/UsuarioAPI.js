@@ -12,3 +12,6 @@ export const obtenerUsuario = (nombre) =>
 
 export const recargarPresupuesto = (nombre, monto) =>
   UsuarioAPI.post(`/usuario/recargar?nombre=${nombre}&monto=${monto}`);
+
+export const descontarPresupuesto = (nombre, monto) =>
+  UsuarioAPI.post(`/usuario/descontar?nombre=${nombre}&monto=${monto}`);

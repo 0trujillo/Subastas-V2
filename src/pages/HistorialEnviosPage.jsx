@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { obtenerHistorial } from "../api/EnviosAPI";
 
 export default function HistorialEnviosPage() {
-  const location = useLocation();
-  const usuario = location.state?.usuario; // 🔥 GANADOR REAL
+  const usuario = JSON.parse(localStorage.getItem("usuarioActual"))?.nombre;
 
   const [historial, setHistorial] = useState([]);
 
@@ -12,8 +10,12 @@ export default function HistorialEnviosPage() {
     if (!usuario) return;
 
     obtenerHistorial(usuario)
-      .then((res) => setHistorial(res.data))
-      .catch(() => console.log("Error cargando historial"));
+      .then((res) => {
+        setHistorial(res.data);
+      })
+      .catch((err) => {
+        console.log("Error cargando historial", err);
+      });
   }, [usuario]);
 
   return (
@@ -24,13 +26,49 @@ export default function HistorialEnviosPage() {
         <p>No hay historial disponible</p>
       ) : (
         <div className="row">
-          {historial.map((h) => (
-            <div className="col-md-4" key={h.id}>
+          {historial.map((item) => (
+            <div className="col-md-4" key={item.id}>
               <div className="card mt-3">
-                <img src={h.imagen} alt={h.nombreProducto} />
+
+                {/* 📦 Placeholder sin imagen */}
+                <div
+                  style={{
+                    width: "100%",
+                    height: "180px",
+                    backgroundColor: "#e9ecef",
+                    borderBottom: "1px solid #ddd",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "48px",
+                    color: "#6c757d",
+                  }}
+                >
+                  📦
+                </div>
+
                 <div className="card-body">
-                  <h5>{h.nombreProducto}</h5>
-                  <span>{h.estado}</span>
+                  <h5>{item.nombreProducto}</h5>
+
+                  {/* 🎨 Badge dinámico según estado */}
+                  <span
+                    className={`badge ${
+                      item.estado === "ENTREGADO"
+                        ? "bg-primary"
+                        : item.estado === "DESCARTADO"
+                        ? "bg-danger"
+                        : "bg-secondary"
+                    }`}
+                  >
+                    {item.estado}
+                  </span>
+
+                  {item.fechaEntrega && (
+                    <p className="mt-2">
+                      Finalizado:{" "}
+                      {new Date(item.fechaEntrega).toLocaleString()}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
